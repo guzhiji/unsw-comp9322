@@ -20,6 +20,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 import org.apache.axis2.context.MessageContext;
 import org.apache.axis2.transport.http.HTTPConstants;
@@ -31,14 +32,12 @@ import javax.servlet.http.HttpServletRequest;
 public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSkeletonInterface {
 
     private static Calendar parseDateTime(String date, String time, String offset) throws ParseException {
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-        SimpleDateFormat tf = new SimpleDateFormat("HH:mm:ss.SSS");
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        SimpleDateFormat tf = new SimpleDateFormat("HH:mm:ss.SSS", Locale.ENGLISH);
         TimeZone tz = TimeZone.getTimeZone("GMT");
 //        TimeZone tz = TimeZone.getTimeZone("GMT" + offset);
         df.setTimeZone(tz);
         tf.setTimeZone(tz);
-        df.parse(date);
-        tf.parse(time);
         Calendar d = df.getCalendar();
         Calendar t = tf.getCalendar();
         t.set(d.get(Calendar.YEAR), d.get(Calendar.MONTH), d.get(Calendar.DATE));
@@ -46,7 +45,7 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
         return t;
     }
 
-    private static String findRoot() throws URISyntaxException {
+    private static String findRoot() throws URISyntaxException, FileNotFoundException {
         // webapps/axis2/WEB-INF/services/ImportDownloadServices.aar
         MessageContext mc = MessageContext.getCurrentMessageContext();
         File f = new File(mc.getAxisService().getFileName().toURI());
@@ -61,12 +60,12 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
                 });
         if (c.length > 0) {
             String r = c[0].getAbsolutePath();
-            if (!r.endsWith(File.pathSeparator)) {
-                r += File.pathSeparator;
+            if (!r.endsWith(File.separator)) {
+                r += File.separator;
             }
             return r;
         }
-        return null;
+        throw new FileNotFoundException("web root is not found");
     }
 
     private static String prepareID(String repo) {
@@ -82,12 +81,12 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
     private static String getURL(String id) throws MalformedURLException {
         HttpServletRequest req = (HttpServletRequest) MessageContext.getCurrentMessageContext()
                 .getProperty(HTTPConstants.MC_HTTP_SERVLETREQUEST);
-        URL u = new URL(req.getRequestURL().toString());
+        URL url = new URL(req.getRequestURL().toString());
 
         StringBuilder result = new StringBuilder();
-        result.append(u.getProtocol()).append(":");
-        if (u.getAuthority() != null && u.getAuthority().length() > 0) {
-            result.append("//").append(u.getAuthority());
+        result.append(url.getProtocol()).append(":");
+        if (url.getAuthority() != null && url.getAuthority().length() > 0) {
+            result.append("//").append(url.getAuthority());
         }
         result.append('/').append(id).append(".csv");
         return result.toString();
@@ -107,23 +106,24 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
             ImportMarketDataDocument.ImportMarketData data = importMarketData0.getImportMarketData();
 
             String reqSec = data.getSec();
-            Calendar reqStartDate = data.getStartDate();
+            Calendar reqStartDate = data.getStartDate();// 2001-07-10T08:26:00Z
             Calendar reqEndDate = data.getEndDate();
 
             String root = findRoot();
             String id = prepareID(root);
 
             CsvWriter writer = new CsvWriter(root + id + ".csv");
-            URL url = new URL(data.getDataSourceURL());
+            URL url = new URL(data.getDataSourceURL()); // http://www.cse.unsw.edu.au/~hpaik/9322/assignments/common/files_csv_spec/FinDataSimple.csv
             CsvReader reader = new CsvReader(new InputStreamReader(url.openStream()));
+            reader.readRecord();//skip headings
             while (reader.readRecord()) {
-                String sec = reader.get("#RIC");
+                String sec = reader.get(0);
                 if (!sec.equals(reqSec)) {
                     continue;
                 }
-                String date = reader.get("Date[G]");
-                String time = reader.get("Time[G]");
-                String offset = reader.get("GMT Offset");
+                String date = reader.get(1);
+                String time = reader.get(2);
+                String offset = reader.get(3);
                 Calendar t = parseDateTime(date, time, offset);
                 if (t.before(reqStartDate) || t.after(reqEndDate)) {
                     continue;
