@@ -13,6 +13,7 @@ import com.csvreader.CsvWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -113,7 +114,8 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
             String id = prepareID(root);
 
             CsvWriter writer = new CsvWriter(root + id + ".csv");
-            CsvReader reader = new CsvReader(data.getDataSourceURL());
+            URL url = new URL(data.getDataSourceURL());
+            CsvReader reader = new CsvReader(new InputStreamReader(url.openStream()));
             while (reader.readRecord()) {
                 String sec = reader.get("#RIC");
                 if (!sec.equals(reqSec)) {
