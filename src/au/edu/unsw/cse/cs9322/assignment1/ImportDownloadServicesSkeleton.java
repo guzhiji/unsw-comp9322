@@ -1,7 +1,11 @@
-/**
+/*
  * ImportDownloadServicesSkeleton.java
  *
+ * Author: Zhiji Gu <zhiji.gu@student.unsw.edu.au>
+ * UNSW Student ID: 3471410
+ * Version: 2014s1.comp9322.a1.p1.0501
  */
+
 package au.edu.unsw.cse.cs9322.assignment1;
 
 import au.edu.unsw.sltf.services.ImportMarketDataResponseDocument;
@@ -31,6 +35,15 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSkeletonInterface {
 
+    /**
+     * parse string datetime information to a {@link java.util.Calendar} object.
+     *
+     * @param date      dd-MMM-yyyy
+     * @param time      HH:mm:ss.SSS
+     * @param offset    time zone offset
+     * @return
+     * @throws ParseException
+     */
     private static Calendar parseDateTime(String date, String time, String offset) throws ParseException {
 
         //System.out.println("==parseDateTime()==");
@@ -38,17 +51,17 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
 
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
         SimpleDateFormat tf = new SimpleDateFormat("HH:mm:ss.SSS", Locale.ENGLISH);
-        
+
         // set timezone
         TimeZone tz = TimeZone.getTimeZone("GMT");
 //        TimeZone tz = TimeZone.getTimeZone("GMT" + offset);
         df.setTimeZone(tz);
         tf.setTimeZone(tz);
-        
+
         // parse date and time
         df.parse(date);
         tf.parse(time);
-        
+
         // add together
         Calendar d = df.getCalendar();
         Calendar t = tf.getCalendar();
@@ -60,6 +73,13 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
         return t;
     }
 
+    /**
+     * find web root and return it as a string.
+     *
+     * @return
+     * @throws URISyntaxException
+     * @throws FileNotFoundException
+     */
     private static String findRoot() throws URISyntaxException, FileNotFoundException {
         // webapps/axis2/WEB-INF/services/ImportDownloadServices.aar
         MessageContext mc = MessageContext.getCurrentMessageContext();
@@ -69,10 +89,10 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
                 .getParentFile() // webapps/axis2
                 .getParentFile() // webapps
                 .listFiles(new FilenameFilter() {
-                    public boolean accept(File dir, String name) {
-                        return name.equalsIgnoreCase("root");
-                    }
-                });
+            public boolean accept(File dir, String name) {
+                return name.equalsIgnoreCase("root"); // webapps/ROOT
+            }
+        });
         if (c.length > 0) {
             String r = c[0].getAbsolutePath();
             if (!r.endsWith(File.separator)) {
@@ -83,6 +103,12 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
         throw new FileNotFoundException("web root is not found");
     }
 
+    /**
+     * prepare a valid id string for creating the csv file.
+     *
+     * @param repo      the directory where the csv file locates
+     * @return
+     */
     private static String prepareID(String repo) {
         File t;
         String id;
@@ -93,6 +119,13 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
         return id;
     }
 
+    /**
+     * generate an open URL to the csv file with a given id.
+     *
+     * @param id
+     * @return
+     * @throws MalformedURLException
+     */
     private static String getURL(String id) throws MalformedURLException {
 
         HttpServletRequest req = (HttpServletRequest) MessageContext.getCurrentMessageContext()
@@ -103,8 +136,9 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
         result.append(url.getProtocol()).append(":");
 
         String authority = url.getAuthority();
-        if (authority != null && authority.length() > 0)
+        if (authority != null && authority.length() > 0) {
             result.append("//").append(authority);
+        }
 
         result.append('/').append(id).append(".csv");
         return result.toString();
@@ -112,6 +146,8 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
     }
 
     /**
+     * Service Method: import data from the given csv file, filter data against the criteria, 
+     * them into an open csv file repository, and return a generated unique id for the file.
      *
      * @param importMarketData0
      * @return importMarketDataResponse1
@@ -150,19 +186,22 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
                         String sec = reader.get(0);
                         if (firstLine) {
                             firstLine = false;
-                            if (sec.equals("#RIC"))
+                            if (sec.equals("#RIC")) {
                                 continue; // skip headings
+                            }
                         }
-                        if (!sec.equals(reqSec))
+                        if (!sec.equals(reqSec)) {
                             continue;
+                        }
 
                         // within the requested period
                         String date = reader.get(1);
                         String time = reader.get(2);
                         String offset = reader.get(3);
                         Calendar t = parseDateTime(date, time, offset);
-                        if (t.before(reqStartDate) || t.after(reqEndDate))
+                        if (t.before(reqStartDate) || t.after(reqEndDate)) {
                             continue;
+                        }
 
                         // write to file
                         empty = false;
@@ -182,8 +221,9 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
 
                     }
 
-                    if (empty)
+                    if (empty) {
                         throw new ImportDownloadFaultException("no records found");
+                    }
 
                 } finally {
 
@@ -202,8 +242,9 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
 
                 // delete corrupted file
                 File t = new File(root + id + ".csv");
-                if (t.exists())
+                if (t.exists()) {
                     t.delete();
+                }
 
                 throw ex;
             }
@@ -224,6 +265,7 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
     }
 
     /**
+     * Service Method: convert a valid id to an URL to its csv file for download.
      *
      * @param downloadFile2
      * @return downloadFileResponse3
@@ -257,5 +299,4 @@ public class ImportDownloadServicesSkeleton implements ImportDownloadServicesSke
         }
 
     }
-
 }
