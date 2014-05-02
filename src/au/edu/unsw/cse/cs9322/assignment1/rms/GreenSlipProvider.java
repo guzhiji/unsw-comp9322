@@ -36,7 +36,10 @@ public final class GreenSlipProvider {
      */
     private static class GreenSlipDB {
 
+        private static Set<String> storage;
+
         static {
+            storage = Collections.synchronizedSet(new HashSet<String>());
             try {
                 add(DriverDB.find("Nima", "Nishad", "YYZ908"));
                 add(DriverDB.find("Jordan", "Michael", "ACM891"));
@@ -44,7 +47,6 @@ public final class GreenSlipProvider {
             } catch (Exception ex) {
             }
         }
-        private static Set<String> storage = Collections.synchronizedSet(new HashSet<String>());
 
         /**
          * check if a driver has paid for a green slip.

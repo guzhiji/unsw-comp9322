@@ -38,7 +38,10 @@ public final class PinkSlipProvider {
      */
     private static class VehicleDB {
 
+        private static ConcurrentHashMap<String, Vehicle> storage;
+
         static {
+            storage = new ConcurrentHashMap<String, Vehicle>();
             try {
                 add(DriverDB.find("Nima", "Nishad", "YYZ908"), new Date(System.currentTimeMillis()), "Light");
                 add(DriverDB.find("Chopra", "Anthony Singh", "MMD123"), new Date(System.currentTimeMillis()), "Light");
@@ -80,7 +83,6 @@ public final class PinkSlipProvider {
                 vehicleType = type;
             }
         }
-        private static ConcurrentHashMap<String, Vehicle> storage = new ConcurrentHashMap<String, Vehicle>();
 
         /**
          * find vehicle information for a driver.
@@ -162,7 +164,10 @@ public final class PinkSlipProvider {
      */
     private static class PinkSlipDB {
 
+        private static Set<String> storage;
+
         static {
+            storage = Collections.synchronizedSet(new HashSet<String>());
             try {
                 add(DriverDB.find("Nima", "Nishad", "YYZ908"));
                 add(DriverDB.find("Jordan", "Michael", "ACM891"));
@@ -170,7 +175,6 @@ public final class PinkSlipProvider {
             } catch (Exception ex) {
             }
         }
-        private static Set<String> storage = Collections.synchronizedSet(new HashSet<String>());
 
         /**
          * check if a driver's vehicle has passed safety check.
