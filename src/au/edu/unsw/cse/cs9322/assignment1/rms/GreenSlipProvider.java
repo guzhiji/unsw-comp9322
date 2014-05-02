@@ -110,6 +110,13 @@ public final class GreenSlipProvider {
 
     /**
      * Service Method: check green slip for a driver.
+     *
+     * @param lastName
+     * @param firstName
+     * @param regoNumber
+     * @return
+     * @throws
+     * au.edu.unsw.cse.cs9322.assignment1.rms.GreenSlipProvider.GreenSlipProviderException
      */
     public GSMessage GSCheck(
             String lastName,

@@ -240,6 +240,13 @@ public final class PinkSlipProvider {
 
     /**
      * Service Method: check pink slip for a driver.
+     *
+     * @param lastName
+     * @param firstName
+     * @param regoNumber
+     * @return
+     * @throws
+     * au.edu.unsw.cse.cs9322.assignment1.rms.PinkSlipProvider.PinkSlipProviderException
      */
     public PSMessage PSCheck(
             String lastName,
@@ -255,6 +262,13 @@ public final class PinkSlipProvider {
 
     /**
      * Service Method: find vehicle information for a driver.
+     *
+     * @param lastName
+     * @param firstName
+     * @param regoNumber
+     * @return
+     * @throws
+     * au.edu.unsw.cse.cs9322.assignment1.rms.PinkSlipProvider.PinkSlipProviderException
      */
     public VehicleMessage VehicleInfo(
             String lastName,
