@@ -52,6 +52,37 @@ public final class DriverDB {
         }
     }
 
+    public static class DriverQuery {
+
+        private String lastName;
+        private String firstName;
+        private String regoNumber;
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public String getRegoNumber() {
+            return regoNumber;
+        }
+
+        public void setLastName(String lname) {
+            lastName = lname;
+        }
+
+        public void setFirstName(String fname) {
+            firstName = fname;
+        }
+
+        public void setRegoNumber(String regoNum) {
+            regoNumber = regoNum;
+        }
+    }
+
     public static class Driver {
 
         private String lastName;
@@ -244,6 +275,15 @@ public final class DriverDB {
             throw new DriverNotFoundException();
         }
         return d;
+
+    }
+
+    /**
+     * find the specified driver by a DriverQuery object.
+     */
+    public static Driver find(DriverQuery q) throws DriverDBException {
+
+        return find(q.lastName, q.firstName, q.regoNumber);
 
     }
 }

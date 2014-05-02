@@ -248,12 +248,9 @@ public final class PinkSlipProvider {
      * @throws
      * au.edu.unsw.cse.cs9322.assignment1.rms.PinkSlipProvider.PinkSlipProviderException
      */
-    public PSMessage PSCheck(
-            String lastName,
-            String firstName,
-            String regoNumber) throws PinkSlipProviderException {
+    public PSMessage PSCheck(DriverDB.DriverQuery q) throws PinkSlipProviderException {
         try {
-            DriverDB.Driver d = DriverDB.find(lastName, firstName, regoNumber);
+            DriverDB.Driver d = DriverDB.find(q);
             return new PSMessage(d, PinkSlipDB.find(d));
         } catch (Throwable t) {
             throw new PinkSlipProviderException(t);
@@ -270,12 +267,9 @@ public final class PinkSlipProvider {
      * @throws
      * au.edu.unsw.cse.cs9322.assignment1.rms.PinkSlipProvider.PinkSlipProviderException
      */
-    public VehicleMessage VehicleInfo(
-            String lastName,
-            String firstName,
-            String regoNumber) throws PinkSlipProviderException {
+    public VehicleMessage VehicleInfo(DriverDB.DriverQuery q) throws PinkSlipProviderException {
         try {
-            DriverDB.Driver d = DriverDB.find(lastName, firstName, regoNumber);
+            DriverDB.Driver d = DriverDB.find(q);
             VehicleDB.Vehicle v = VehicleDB.find(d);
             return new VehicleMessage(d, v);
         } catch (Throwable t) {

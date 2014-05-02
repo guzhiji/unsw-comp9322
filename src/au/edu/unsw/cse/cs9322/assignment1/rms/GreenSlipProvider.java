@@ -118,12 +118,9 @@ public final class GreenSlipProvider {
      * @throws
      * au.edu.unsw.cse.cs9322.assignment1.rms.GreenSlipProvider.GreenSlipProviderException
      */
-    public GSMessage GSCheck(
-            String lastName,
-            String firstName,
-            String regoNumber) throws GreenSlipProviderException {
+    public GSMessage GSCheck(DriverDB.DriverQuery q) throws GreenSlipProviderException {
         try {
-            DriverDB.Driver d = DriverDB.find(lastName, firstName, regoNumber);
+            DriverDB.Driver d = DriverDB.find(q);
             return new GSMessage(d, GreenSlipDB.find(d));
         } catch (Throwable t) {
             throw new GreenSlipProviderException(t);
