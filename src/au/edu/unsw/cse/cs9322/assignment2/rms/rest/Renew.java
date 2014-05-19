@@ -1,8 +1,12 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.rest;
 
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB;
+import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -60,7 +64,8 @@ public class Renew {
             @FormParam("address") String address
     ) {
 
-        RequestDB.Request r = new RequestDB.Request(lname, fname, license, rego_num, address);
+        RequestDB.Request r = new RequestDB.Request(
+                lname, fname, license, rego_num, address);
         RequestDB.add(r);
         return Response.ok(r.getId()).build();
 
@@ -80,17 +85,28 @@ public class Renew {
 
     @Path("request/{request}")
     public RenewalRequest getRequest(
-            @PathParam("request") String id) throws RequestDB.RequestDBException {
+            @PathParam("request") String id)
+            throws RequestDB.RequestDBException {
         return new RenewalRequest(uriInfo, request, id);
     }
 
-    @Path("payment/{payment}")
+    @Path("payment/{request}")
     public RenewalPayment getPayment(
-            @PathParam("payment") String id) {
+            @PathParam("request") String id) {
         return new RenewalPayment(uriInfo, request, id);
     }
 
-    @Path("registration/{request}")
+    @GET
+    @Path("registration/requests")
+    @Produces(MediaType.APPLICATION_XML)
+    public List<RequestDB.Request> getList() {
+        List<RequestDB.Request> l = new ArrayList<RequestDB.Request>();
+        for (RequestDB.Request r : RequestDB.getQueueList())
+            l.add(r);
+        return l;
+    }
+
+    @Path("registration/request/{request}")
     public Registration getRegistration(
             @PathParam("request") String id) {
         return new Registration(uriInfo, request, id);

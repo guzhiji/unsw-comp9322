@@ -3,6 +3,7 @@ package au.edu.unsw.cse.cs9322.assignment2.rms.db;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import javax.xml.bind.annotation.XmlRootElement;
 
 public class RequestDB {
 
@@ -25,6 +26,7 @@ public class RequestDB {
         ARCHIVED; // finished & officers won't see it
     }
 
+    @XmlRootElement
     public static class Request {
 
         private String id;
@@ -127,7 +129,7 @@ public class RequestDB {
     public static String genKey() {
         String k;
         do {
-            k = String.valueOf(System.currentTimeMillis()) + "-" + String.valueOf((int) (Math.random() * 1000));
+            k = String.valueOf(System.currentTimeMillis()) + String.valueOf((int) (Math.random() * 1000));
         } while (storage.containsKey(k));
         return k;
     }
@@ -162,6 +164,10 @@ public class RequestDB {
 
     public static Iterator<Request> getQueueIterator() {
         return queue.iterator();
+    }
+
+    public static Iterable<Request> getQueueList() {
+        return queue;
     }
 
     public static int getQueueSize() {
