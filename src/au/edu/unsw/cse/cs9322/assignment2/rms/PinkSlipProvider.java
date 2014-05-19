@@ -5,8 +5,9 @@
  * UNSW Student ID: 3471410
  * Version: 2014s1.comp9322.a1.p2.0501
  */
-package au.edu.unsw.cse.cs9322.assignment1.rms;
+package au.edu.unsw.cse.cs9322.assignment2.rms;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.db.DriverDB;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -51,7 +52,7 @@ public final class PinkSlipProvider {
                 add(DriverDB.find("Haradi", "Souka Azadeh", "BNZ100"), new Date(System.currentTimeMillis()), "Light");
                 add(DriverDB.find("Go", "Henry", "NSZ134"), new Date(System.currentTimeMillis()), "Heavy");
                 add(DriverDB.find("Hu", "Luming", "CNZ913"), new Date(System.currentTimeMillis()), "Light");
-            } catch (Exception ex) {
+            } catch (DriverDB.DriverDBException ex) {
             }
         }
 
@@ -124,11 +125,11 @@ public final class PinkSlipProvider {
      */
     public class VehicleMessage {
 
-        private String lastName;
-        private String firstName;
-        private String regoNumber;
-        private Date manufacturedDate;
-        private String vehicleType;
+        private final String lastName;
+        private final String firstName;
+        private final String regoNumber;
+        private final Date manufacturedDate;
+        private final String vehicleType;
 
         VehicleMessage(DriverDB.Driver d, VehicleDB.Vehicle v) {
             lastName = d.getLastName();
@@ -164,7 +165,7 @@ public final class PinkSlipProvider {
      */
     private static class PinkSlipDB {
 
-        private static Set<String> storage;
+        private static final Set<String> storage;
 
         static {
             storage = Collections.synchronizedSet(new HashSet<String>());
@@ -172,7 +173,7 @@ public final class PinkSlipProvider {
                 add(DriverDB.find("Nima", "Nishad", "YYZ908"));
                 add(DriverDB.find("Jordan", "Michael", "ACM891"));
                 add(DriverDB.find("Deng", "Zhang", "NAQ900"));
-            } catch (Exception ex) {
+            } catch (DriverDB.DriverDBException ex) {
             }
         }
 
@@ -209,10 +210,10 @@ public final class PinkSlipProvider {
      */
     public class PSMessage {
 
-        private String lastName;
-        private String firstName;
-        private String regoNumber;
-        private boolean checkedFlag;
+        private final String lastName;
+        private final String firstName;
+        private final String regoNumber;
+        private final boolean checkedFlag;
 
         PSMessage(DriverDB.Driver d, boolean checked) {
             lastName = d.getLastName();
@@ -241,18 +242,16 @@ public final class PinkSlipProvider {
     /**
      * Service Method: check pink slip for a driver.
      *
-     * @param lastName
-     * @param firstName
-     * @param regoNumber
+     * @param q
      * @return
      * @throws
-     * au.edu.unsw.cse.cs9322.assignment1.rms.PinkSlipProvider.PinkSlipProviderException
+     * au.edu.unsw.cse.cs9322.assignment2.rms.PinkSlipProvider.PinkSlipProviderException
      */
     public PSMessage PSCheck(DriverDB.DriverQuery q) throws PinkSlipProviderException {
         try {
             DriverDB.Driver d = DriverDB.find(q);
             return new PSMessage(d, PinkSlipDB.find(d));
-        } catch (Throwable t) {
+        } catch (DriverDB.DriverDBException t) {
             throw new PinkSlipProviderException(t);
         }
     }
@@ -260,19 +259,17 @@ public final class PinkSlipProvider {
     /**
      * Service Method: find vehicle information for a driver.
      *
-     * @param lastName
-     * @param firstName
-     * @param regoNumber
+     * @param q
      * @return
      * @throws
-     * au.edu.unsw.cse.cs9322.assignment1.rms.PinkSlipProvider.PinkSlipProviderException
+     * au.edu.unsw.cse.cs9322.assignment2.rms.PinkSlipProvider.PinkSlipProviderException
      */
     public VehicleMessage VehicleInfo(DriverDB.DriverQuery q) throws PinkSlipProviderException {
         try {
             DriverDB.Driver d = DriverDB.find(q);
             VehicleDB.Vehicle v = VehicleDB.find(d);
             return new VehicleMessage(d, v);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             throw new PinkSlipProviderException(t);
         }
     }

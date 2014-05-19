@@ -5,8 +5,9 @@
  * UNSW Student ID: 3471410
  * Version: 2014s1.comp9322.a1.p2.0501
  */
-package au.edu.unsw.cse.cs9322.assignment1.rms;
+package au.edu.unsw.cse.cs9322.assignment2.rms;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.db.DriverDB;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,7 +37,7 @@ public final class GreenSlipProvider {
      */
     private static class GreenSlipDB {
 
-        private static Set<String> storage;
+        private static final Set<String> storage;
 
         static {
             storage = Collections.synchronizedSet(new HashSet<String>());
@@ -44,7 +45,7 @@ public final class GreenSlipProvider {
                 add(DriverDB.find("Nima", "Nishad", "YYZ908"));
                 add(DriverDB.find("Jordan", "Michael", "ACM891"));
                 add(DriverDB.find("Haradi", "Souka Azadeh", "BNZ100"));
-            } catch (Exception ex) {
+            } catch (DriverDB.DriverDBException ex) {
             }
         }
 
@@ -79,10 +80,10 @@ public final class GreenSlipProvider {
      */
     public class GSMessage {
 
-        private String lastName;
-        private String firstName;
-        private String regoNumber;
-        private boolean paidFlag;
+        private final String lastName;
+        private final String firstName;
+        private final String regoNumber;
+        private final boolean paidFlag;
 
         GSMessage(DriverDB.Driver d, boolean paid) {
             lastName = d.getLastName();
@@ -111,18 +112,16 @@ public final class GreenSlipProvider {
     /**
      * Service Method: check green slip for a driver.
      *
-     * @param lastName
-     * @param firstName
-     * @param regoNumber
+     * @param q
      * @return
      * @throws
-     * au.edu.unsw.cse.cs9322.assignment1.rms.GreenSlipProvider.GreenSlipProviderException
+     * au.edu.unsw.cse.cs9322.assignment2.rms.GreenSlipProvider.GreenSlipProviderException
      */
     public GSMessage GSCheck(DriverDB.DriverQuery q) throws GreenSlipProviderException {
         try {
             DriverDB.Driver d = DriverDB.find(q);
             return new GSMessage(d, GreenSlipDB.find(d));
-        } catch (Throwable t) {
+        } catch (DriverDB.DriverDBException t) {
             throw new GreenSlipProviderException(t);
         }
     }

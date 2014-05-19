@@ -5,7 +5,7 @@
  * UNSW Student ID: 3471410
  * Version: 2014s1.comp9322.a1.p2.0501
  */
-package au.edu.unsw.cse.cs9322.assignment1.rms;
+package au.edu.unsw.cse.cs9322.assignment2.rms.db;
 
 import com.csvreader.CsvReader;
 import java.io.InputStreamReader;
@@ -90,6 +90,7 @@ public final class DriverDB {
         private String licenceNumber;
         private Date lastRegoDate;
         private String regoNumber;
+        private String address;
 
         public String getLastName() {
             return lastName;
@@ -111,6 +112,10 @@ public final class DriverDB {
             return regoNumber;
         }
 
+        public String getAddress() {
+            return address;
+        }
+
         void setLastName(String lname) {
             lastName = lname;
         }
@@ -130,6 +135,10 @@ public final class DriverDB {
         void setRegoNumber(String regoNum) {
             regoNumber = regoNum;
         }
+
+        void setAddress(String addr) {
+            address = addr;
+        }
     }
     /**
      * URL where all data are loaded.
@@ -143,7 +152,6 @@ public final class DriverDB {
     static {
 
         // initialization: load data
-
         ConcurrentHashMap<String, Driver> s = new ConcurrentHashMap<String, Driver>();
         CsvReader reader = null;
         try {
@@ -164,6 +172,7 @@ public final class DriverDB {
                     d.setLicenceNumber(reader.get(2));
                     d.setLastRegoDate(parseDate(reader.get(3)));
                     d.setRegoNumber(reader.get(4));
+                    d.setAddress("");
                     s.put(genKey(d.lastName, d.firstName, d.regoNumber), d);
                 } catch (Exception ex) {
                 }
@@ -189,6 +198,7 @@ public final class DriverDB {
                     d.setLicenceNumber(row[2]);
                     d.setLastRegoDate(parseDate(row[3]));
                     d.setRegoNumber(row[4]);
+                    d.setAddress("");
                     s.put(genKey(d.lastName, d.firstName, d.regoNumber), d);
                 }
             } catch (Exception ex2) {
