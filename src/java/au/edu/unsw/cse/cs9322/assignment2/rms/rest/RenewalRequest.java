@@ -16,13 +16,14 @@ public class RenewalRequest {
 
     UriInfo uriInfo;
     Request request;
-    String id;
+    String requestId;
     RequestDB.Request renewalReq;
 
-    public RenewalRequest(UriInfo uriInfo, Request request, String id) throws RequestDB.RequestDBException {
+    public RenewalRequest(UriInfo uriInfo, Request request, String id)
+            throws RequestDB.RequestDBException {
         this.uriInfo = uriInfo;
         this.request = request;
-        this.id = id;
+        this.requestId = id;
         renewalReq = RequestDB.get(id);
     }
 
@@ -36,7 +37,7 @@ public class RenewalRequest {
      * au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB.RequestDBException
      */
     @GET
-    @Produces(MediaType.TEXT_XML)
+    @Produces(MediaType.APPLICATION_XML)
     public RequestDB.Request get() throws RequestDB.RequestDBException {
         return renewalReq;
     }
@@ -49,18 +50,23 @@ public class RenewalRequest {
      *
      * @param req
      * @return
+     * @throws
+     * au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB.RequestDBException
      */
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
-    @Produces(MediaType.TEXT_XML)
-    public Response update(JAXBElement<RequestDB.Request> req) {
+    @Produces(MediaType.APPLICATION_XML)
+    public Response update(JAXBElement<RequestDB.Request> req) throws RequestDB.RequestDBException {
 
-        RequestDB.Request r = req.getValue();
-        if (r.getStatus() == RequestDB.Status.NEW) {
+        if (renewalReq.getStatus() == RequestDB.Status.NEW) {
 
+            RequestDB.Request nr = req.getValue();
+            RequestDB.update(requestId, nr);
+            renewalReq = nr;
+            return Response.ok().build();
         }
+        return Response.serverError().build();
 
-        return Response.ok().build();
     }
 
     /**
@@ -73,12 +79,15 @@ public class RenewalRequest {
      */
     @DELETE
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void remove()
+    public Response remove()
             throws RequestDB.RequestDBException {
 
-        if (renewalReq.getStatus() == RequestDB.Status.NEW) {
-            RequestDB.remove(id);
+        if (renewalReq.getStatus() == RequestDB.Status.NEW
+                || renewalReq.getStatus() == RequestDB.Status.ARCHIVED) {
+            RequestDB.remove(requestId);
+            return Response.ok().build();
         }
+        return Response.serverError().build();
 
     }
 }

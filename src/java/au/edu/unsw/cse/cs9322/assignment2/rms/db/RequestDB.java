@@ -50,6 +50,7 @@ public class RequestDB {
         }
 
         public Request() {
+            status = Status.NEW;
         }
 
         public Request(String lname, String fname, String licence, String regoNum, String addr) {
@@ -79,7 +80,7 @@ public class RequestDB {
             return firstName;
         }
 
-        public void setFirstNumber(String fname) {
+        public void setFirstName(String fname) {
             firstName = fname;
         }
 
@@ -134,10 +135,18 @@ public class RequestDB {
         return k;
     }
 
-    public static void add(Request r) {
+    public synchronized static void add(Request r) {
         r.id = genKey();
         queue.add(r);
         storage.put(r.id, r);
+    }
+
+    public synchronized static void update(String id, Request r) throws RequestDBException {
+        Request or = get(id);
+        queue.remove(or);
+        r.id = id;
+        queue.add(r);
+        storage.put(id, r);
     }
 
     public static Request get(String id) throws RequestDBException {
@@ -152,7 +161,7 @@ public class RequestDB {
         return storage.containsKey(id);
     }
 
-    public static void updateStatus(String id, Status s) throws RequestDBException {
+    public synchronized static void updateStatus(String id, Status s) throws RequestDBException {
         Request r = get(id);
         if (s == Status.ARCHIVED) {
             queue.remove(r);
@@ -182,7 +191,7 @@ public class RequestDB {
         return queue.peek();
     }
 
-    public static void remove(String id) throws RequestDBException {
+    public synchronized static void remove(String id) throws RequestDBException {
         Request r = storage.remove(id);
         if (r == null) {
             throw new RequestDBException("Request not found");
@@ -190,7 +199,7 @@ public class RequestDB {
         queue.remove(r);
     }
 
-    public static void clear() {
+    public synchronized static void clear() {
         storage.clear();
         queue.clear();
     }

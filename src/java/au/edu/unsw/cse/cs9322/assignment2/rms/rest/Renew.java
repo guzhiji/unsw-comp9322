@@ -6,7 +6,6 @@ import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -61,13 +60,12 @@ public class Renew {
             @FormParam("first_name") String fname,
             @FormParam("license_number") String license,
             @FormParam("rego_number") String rego_num,
-            @FormParam("address") String address
-    ) {
+            @FormParam("address") String address) {
 
         RequestDB.Request r = new RequestDB.Request(
                 lname, fname, license, rego_num, address);
         RequestDB.add(r);
-        return Response.ok(r.getId()).build();
+        return Response.created(uriInfo.getBaseUriBuilder().path(Renew.class).path("request").path(r.getId()).build()).build();
 
     }
 
@@ -101,8 +99,9 @@ public class Renew {
     @Produces(MediaType.APPLICATION_XML)
     public List<RequestDB.Request> getList() {
         List<RequestDB.Request> l = new ArrayList<RequestDB.Request>();
-        for (RequestDB.Request r : RequestDB.getQueueList())
+        for (RequestDB.Request r : RequestDB.getQueueList()) {
             l.add(r);
+        }
         return l;
     }
 
@@ -111,5 +110,4 @@ public class Renew {
             @PathParam("request") String id) {
         return new Registration(uriInfo, request, id);
     }
-
 }

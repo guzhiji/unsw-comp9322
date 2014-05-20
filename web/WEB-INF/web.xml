@@ -4,20 +4,57 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
-    <display-name>SimpleRestProj</display-name>
+    <display-name>SOA Assignment 2</display-name>
+    
+    
+    <!--                         RMS REST Service                            -->
     <servlet>
-        <servlet-name>Jersey REST Service</servlet-name>
+        <servlet-name>RMS REST Service</servlet-name>
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms</param-value>
+            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms.rest</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <servlet-name>Jersey REST Service</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <servlet-name>RMS REST Service</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
+    
+    
+    <!--                         RMS Driver App                            -->
+    <servlet>
+        <servlet-name>RMS Driver App</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RMS Driver App</servlet-name>
+        <url-pattern>/apps/driver/*</url-pattern>
+    </servlet-mapping>
+    
+    
+    <!--                         RMS Officer App                            -->
+    <servlet>
+        <servlet-name>RMS Officer App</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RMS Officer App</servlet-name>
+        <url-pattern>/apps/officer/*</url-pattern>
+    </servlet-mapping>
+    
+    
     <session-config>
         <session-timeout>
             30
