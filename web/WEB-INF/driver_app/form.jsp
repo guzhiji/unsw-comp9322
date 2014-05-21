@@ -1,8 +1,12 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <jsp:include page="_header.jsp" />
 <form method="post" action="${formAction}" data-ajax="false">
     <ul data-role="listview">
-        <li>${errorMessage}</li>
+        <c:if test="${not empty errorMessage}">
+            <li><div class="ui-body ui-body-e">${errorMessage}</div></li>
+            </c:if>
         <li data-role="list-divider">Your Request</li>
         <li data-role="fieldcontain">
             <label for="fname">First Name</label>

@@ -28,6 +28,10 @@
         <div>Address</div>
         <div>${myRequest.address}</div>
     </li>
+    <li>
+        <form action="${formAction}" method="post"><button type="submit" data-theme="a">Logout</button></form>
+
+    </li>
 </ul>
 
 <jsp:include page="_footer.jsp" />

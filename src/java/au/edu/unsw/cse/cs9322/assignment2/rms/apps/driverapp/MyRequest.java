@@ -10,17 +10,27 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
+@Path("/myrequest")
 public class MyRequest extends DriverAppResource {
 
-    private String requestID;
+    private final String requestID;
 
-    MyRequest(String rid) {
-        requestID = rid;
+    public MyRequest(
+            @Context HttpServletRequest req,
+            @Context HttpServletResponse resp,
+            @Context UriInfo uri
+    ) {
+        super(req, resp, uri);
+        requestID = getUserId(req);
+        if (requestID == null)
+            raiseError("not authorized");
     }
 
     @PUT
@@ -31,9 +41,7 @@ public class MyRequest extends DriverAppResource {
             @FormParam("last_name") String lname,
             @FormParam("rego_num") String rego_num,
             @FormParam("license") String license,
-            @FormParam("address") String address,
-            @Context HttpServletRequest req,
-            @Context HttpServletResponse res)
+            @FormParam("address") String address)
             throws IOException, ServletException {
 
         RequestDB.Request r = new RequestDB.Request(lname, fname, license, rego_num, address);
@@ -44,21 +52,23 @@ public class MyRequest extends DriverAppResource {
 
         System.out.println(response.getStatus());
 
-        render(req, res, "done.jsp");
+        render("done.jsp");
 
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public void showStatus(
-            @Context HttpServletRequest req,
-            @Context HttpServletResponse res)
+    public void showStatus()
             throws IOException, ServletException {
+
+        httpRequest.setAttribute("formAction", getPath("logout"));
+
         RequestDB.Request r = getRequestBuilder(service.path("request").path(requestID))
                 .accept(MediaType.APPLICATION_XML)
                 .get(RequestDB.Request.class);
-        req.setAttribute("myRequest", r);
-        render(req, res, "status.jsp");
+
+        httpRequest.setAttribute("myRequest", r);
+        render("status.jsp");
     }
 
     public Response pay() {

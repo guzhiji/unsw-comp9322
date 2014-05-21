@@ -2,6 +2,10 @@ package au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp;
 
 import au.edu.unsw.cse.cs9322.assignment2.rms.apps.RMSAppResource;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserDB;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 abstract class OfficerAppResource extends RMSAppResource {
 
@@ -17,8 +21,20 @@ abstract class OfficerAppResource extends RMSAppResource {
         }
     }
 
-    public OfficerAppResource() {
-        super("http://localhost:8080/RMS/rest/renew/", "officer_app");
+    protected String getPath(String p) {
+        UriBuilder b = uriInfo.getBaseUriBuilder().
+                path(OfficerHome.class);
+        if (p == null)
+            return b.build().getPath();
+        return b.path(p).build().getPath();
+    }
+
+    public OfficerAppResource(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            UriInfo uri
+    ) {
+        super("http://localhost:8084/RMS/rest/renew/", "officer_app", req, resp, uri);
     }
 
 }

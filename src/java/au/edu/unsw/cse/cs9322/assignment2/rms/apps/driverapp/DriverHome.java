@@ -1,5 +1,6 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserDB;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserDB.UserDBException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.representation.Form;
@@ -16,41 +17,30 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 @Path("/")
 public class DriverHome extends DriverAppResource {
 
-    @Context
-    UriInfo uriInfo;
-
-    private String getPath(String p) {
-        UriBuilder b = uriInfo.getBaseUriBuilder().
-                path(DriverHome.class);
-        if (p == null)
-            return b.build().getPath();
-        return b.path(p).build().getPath();
+    public DriverHome(
+            @Context HttpServletRequest req,
+            @Context HttpServletResponse resp,
+            @Context UriInfo uri) {
+        super(req, resp, uri);
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public void show(
-            @Context HttpServletRequest req,
-            @Context HttpServletResponse res)
-            throws IOException, ServletException {
-        req.setAttribute("formAction", getPath("login"));
-        render(req, res, "login.jsp");
+    public void show() throws IOException, ServletException {
+        httpRequest.setAttribute("formAction", getPath("login"));
+        render("login.jsp");
     }
 
     @GET
     @Path("login")
     @Produces(MediaType.TEXT_HTML)
-    public void showLogin(
-            @Context HttpServletRequest req,
-            @Context HttpServletResponse res)
-            throws IOException, ServletException {
-        show(req, res);
+    public void showLogin() throws IOException, ServletException {
+        show();
     }
 
     @POST
@@ -61,69 +51,47 @@ public class DriverHome extends DriverAppResource {
             @FormParam("first_name") String fname,
             @FormParam("last_name") String lname,
             @FormParam("rego_num") String rego_num,
-            @FormParam("password") String password,
-            @Context HttpServletRequest req,
-            @Context HttpServletResponse res)
-            throws IOException, DriverAppException, ServletException {
+            @FormParam("password") String password)
+            throws IOException, ServletException {
 
         try {
-
             String id = USER_DB.getUserId(genKey(fname, lname, rego_num), password);
 
             if (id != null) {
-                setUserId(req, id);
-                res.sendRedirect(getPath("myrequest"));
-            } else
-                res.sendRedirect(getPath("logout"));
-
-        } catch (UserDBException dbex) {
-            req.setAttribute("errorMessage", dbex.getMessage());
-            render(req, res, "login.jsp");
+                setUserId(httpRequest, id);
+                httpResponse.sendRedirect(getPath("myrequest"));
+            } else {
+                raiseError("Password may be wrong for the user.", "login.jsp");
+            }
+        } catch (UserDB.UserDBException ex) {
+            raiseError(ex, "login.jsp");
         }
 
     }
 
-    @GET
+    @POST
     @Path("logout")
-    public void logout(
-            @Context HttpServletRequest req,
-            @Context HttpServletResponse res)
-            throws IOException {
+    public void logout() throws IOException {
 
-        HttpSession sess = req.getSession(false);
+        HttpSession sess = httpRequest.getSession(false);
         if (sess != null)
             sess.invalidate();
-        res.sendRedirect(getPath(null));
-
-    }
-
-    @Path("myrequest")
-    public MyRequest getMyRequest(
-            @Context HttpServletRequest req)
-            throws DriverAppException {
-
-        String id = getUserId(req);
-        if (id != null)
-            return new MyRequest(id);
-        throw new DriverAppException("not authorized");
+        httpResponse.sendRedirect(getPath(null));
 
     }
 
     @GET
     @Path("request")
     @Produces(MediaType.TEXT_HTML)
-    public void showRequestForm(
-            @Context HttpServletRequest req,
-            @Context HttpServletResponse res)
-            throws IOException, ServletException {
+    public void showRequestForm() throws IOException, ServletException {
 
-        req.setAttribute("formAction", getPath("request"));
+        httpRequest.setAttribute("formAction", getPath("request"));
 
-        String id = getUserId(req);
+        String id = getUserId(httpRequest);
         if (id != null)
-            res.sendRedirect(getPath("myrequest"));
+            httpResponse.sendRedirect(getPath("myrequest"));
         else
-            render(req, res, "form.jsp");
+            render("form.jsp");
 
     }
 
@@ -137,10 +105,8 @@ public class DriverHome extends DriverAppResource {
             @FormParam("password") String password,
             @FormParam("rego_num") String rego_num,
             @FormParam("license") String license,
-            @FormParam("address") String address,
-            @Context HttpServletRequest req,
-            @Context HttpServletResponse res)
-            throws IOException, ServletException, DriverAppException {
+            @FormParam("address") String address
+    ) throws IOException, ServletException {
 
         try {
 
@@ -164,14 +130,13 @@ public class DriverHome extends DriverAppResource {
                 id = id.substring(id.lastIndexOf('/'));
                 System.out.println("Form response: request id=" + id);
                 USER_DB.register(key, password, id);
-                setUserId(req, id);
-                res.sendRedirect(getPath("myrequest"));
+                setUserId(httpRequest, id);
+                httpResponse.sendRedirect(getPath("myrequest"));
             } else
-                throw new DriverAppException("service error:" + response.getStatus() + "," + service.path("request").toString());
+                raiseError("service error:" + response.getStatus() + "," + service.path("request").toString());
 
         } catch (UserDBException dbex) {
-            req.setAttribute("errorMessage", dbex.getMessage());
-            render(req, res, "form.jsp");
+            raiseError(dbex, "form.jsp");
         }
 
     }
