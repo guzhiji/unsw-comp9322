@@ -28,6 +28,7 @@ public class OfficerHome extends OfficerAppResource {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public void show() throws IOException, ServletException {
+        httpRequest.setAttribute("formAction", getPath("login"));
         render("login.jsp");
     }
 
@@ -44,8 +45,8 @@ public class OfficerHome extends OfficerAppResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public void login(
             @FormParam("username") String username,
-            @FormParam("password") String password
-    ) throws IOException, ServletException {
+            @FormParam("password") String password)
+            throws IOException, ServletException {
 
         String id = USER_DB.getUserId(username, password);
 
@@ -63,10 +64,10 @@ public class OfficerHome extends OfficerAppResource {
     public void logout() throws IOException {
 
         HttpSession sess = httpRequest.getSession(false);
-        if (sess != null)
+        if (sess != null) {
             sess.invalidate();
+        }
         httpResponse.sendRedirect(getPath(null));
 
     }
-
 }

@@ -1,5 +1,7 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.rest;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestStatus;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.PaymentDB;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB;
 import java.util.Date;
@@ -60,9 +62,9 @@ public class RenewalPayment {
             @FormParam("amount") float amount)
             throws RequestDB.RequestDBException {
 
-        RequestDB.Request r = RequestDB.get(id);
+        RequestItem r = RequestDB.get(id);
         payment.setPaidDate(new Date());
-        RequestDB.updateStatus(id, RequestDB.Status.ARCHIVED);
+        RequestDB.updateStatus(id, RequestStatus.ARCHIVED);
 
         return Response.ok(payment).build();
     }

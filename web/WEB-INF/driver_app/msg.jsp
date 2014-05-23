@@ -3,7 +3,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>${title}</title> 
+        <title>RMS - Driver's App</title> 
         <meta name="viewport" content="width=device-width, initial-scale=1"> 
         <link rel="stylesheet" href="/RMS/jquery.mobile-1.2.0.min.css" />
         <script src="/RMS/scripts/jquery.min.js"></script>
@@ -14,11 +14,10 @@
         <div data-role="dialog">
 
             <div data-role="header" data-theme="d">
-                <h1>${title}</h1>
+                <h1>RMS - Driver's App</h1>
             </div>
 
             <div data-role="content" data-theme="c">
-                <h1>${errorBrief}</h1>
                 <p>${errorMessage}</p>
             </div>
         </div>

@@ -1,5 +1,7 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.rest;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestStatus;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.PaymentDB;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB;
 import javax.ws.rs.Consumes;
@@ -32,7 +34,7 @@ public class Registration {
      * is accepted by the officer, the RMS Registration Officer Application
      * sends HTTP POST to the relevant RESTful service. In this request, the
      * officer should indicate how much the renewal fee is). The response of
-     * this HTTP POST must containa URI of the new payment and its location.
+     * this HTTP POST must contain a URI of the new payment and its location.
      *
      * @param amount
      * @return
@@ -41,33 +43,33 @@ public class Registration {
      */
     @POST
     @Path("accept")
-    @Produces(MediaType.TEXT_XML)
+    @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_XML)
     public PaymentDB.Payment accept(
             JAXBElement<Float> amount)
             throws RequestDB.RequestDBException {
 
-        RequestDB.updateStatus(id, RequestDB.Status.ACCEPTED);
+        RequestDB.updateStatus(id, RequestStatus.ACCEPTED);
         return PaymentDB.create(id, amount.getValue());
 
     }
 
     @POST
     @Path("accept")
-    @Produces(MediaType.TEXT_XML)
+    @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public PaymentDB.Payment accept(
             @FormParam("amount") float amount)
             throws RequestDB.RequestDBException {
 
-        RequestDB.updateStatus(id, RequestDB.Status.ACCEPTED);
+        RequestDB.updateStatus(id, RequestStatus.ACCEPTED);
         return PaymentDB.create(id, amount);
 
     }
 
     @PUT
     @Path("reject")
-    @Produces(MediaType.TEXT_XML)
+    @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_XML)
     public Response reject(JAXBElement<String> reason)
             throws RequestDB.RequestDBException {
@@ -76,9 +78,9 @@ public class Registration {
             // TODO exception - please provide a reason
         }
 
-        RequestDB.Request r = RequestDB.get(id);
+        RequestItem r = RequestDB.get(id);
         r.setRejectReason(reason.getValue());
-        RequestDB.updateStatus(id, RequestDB.Status.ARCHIVED);
+        RequestDB.updateStatus(id, RequestStatus.ARCHIVED);
 
         return Response.ok(r).build();
 
@@ -86,11 +88,11 @@ public class Registration {
 
     @PUT
     @Path("review")
-    @Produces(MediaType.TEXT_XML)
+    @Produces(MediaType.APPLICATION_XML)
     public Response review()
             throws RequestDB.RequestDBException {
 
-        RequestDB.updateStatus(id, RequestDB.Status.UNDER_REVIEW);
+        RequestDB.updateStatus(id, RequestStatus.UNDER_REVIEW);
 
         return Response.ok().build();
 

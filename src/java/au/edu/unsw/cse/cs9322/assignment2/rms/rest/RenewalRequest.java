@@ -1,5 +1,7 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.rest;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestStatus;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -17,7 +19,7 @@ public class RenewalRequest {
     UriInfo uriInfo;
     Request request;
     String requestId;
-    RequestDB.Request renewalReq;
+    RequestItem renewalReq;
 
     public RenewalRequest(UriInfo uriInfo, Request request, String id)
             throws RequestDB.RequestDBException {
@@ -38,7 +40,7 @@ public class RenewalRequest {
      */
     @GET
     @Produces(MediaType.APPLICATION_XML)
-    public RequestDB.Request get() throws RequestDB.RequestDBException {
+    public RequestItem get() throws RequestDB.RequestDBException {
         return renewalReq;
     }
 
@@ -56,11 +58,11 @@ public class RenewalRequest {
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
-    public Response update(JAXBElement<RequestDB.Request> req) throws RequestDB.RequestDBException {
+    public Response update(JAXBElement<RequestItem> req) throws RequestDB.RequestDBException {
 
-        if (renewalReq.getStatus() == RequestDB.Status.NEW) {
+        if (renewalReq.getStatus() == RequestStatus.NEW) {
 
-            RequestDB.Request nr = req.getValue();
+            RequestItem nr = req.getValue();
             RequestDB.update(requestId, nr);
             renewalReq = nr;
             return Response.ok().build();
@@ -82,8 +84,8 @@ public class RenewalRequest {
     public Response remove()
             throws RequestDB.RequestDBException {
 
-        if (renewalReq.getStatus() == RequestDB.Status.NEW
-                || renewalReq.getStatus() == RequestDB.Status.ARCHIVED) {
+        if (renewalReq.getStatus() == RequestStatus.NEW
+                || renewalReq.getStatus() == RequestStatus.ARCHIVED) {
             RequestDB.remove(requestId);
             return Response.ok().build();
         }

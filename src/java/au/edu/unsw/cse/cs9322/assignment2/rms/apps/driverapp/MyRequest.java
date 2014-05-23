@@ -1,6 +1,6 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp;
 
-import au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
 import com.sun.jersey.api.client.ClientResponse;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -44,7 +44,7 @@ public class MyRequest extends DriverAppResource {
             @FormParam("address") String address)
             throws IOException, ServletException {
 
-        RequestDB.Request r = new RequestDB.Request(lname, fname, license, rego_num, address);
+        RequestItem r = new RequestItem(lname, fname, license, rego_num, address);
 
         ClientResponse response = getRequestBuilder(service.path("request").path(requestID))
                 .accept(MediaType.APPLICATION_XML)
@@ -63,9 +63,9 @@ public class MyRequest extends DriverAppResource {
 
         httpRequest.setAttribute("formAction", getPath("logout"));
 
-        RequestDB.Request r = getRequestBuilder(service.path("request").path(requestID))
+        RequestItem r = getRequestBuilder(service.path("request").path(requestID))
                 .accept(MediaType.APPLICATION_XML)
-                .get(RequestDB.Request.class);
+                .get(RequestItem.class);
 
         httpRequest.setAttribute("myRequest", r);
         render("status.jsp");

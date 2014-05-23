@@ -1,5 +1,7 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.rest;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestList;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +64,7 @@ public class Renew {
             @FormParam("rego_number") String rego_num,
             @FormParam("address") String address) {
 
-        RequestDB.Request r = new RequestDB.Request(
+        RequestItem r = new RequestItem(
                 lname, fname, license, rego_num, address);
         RequestDB.add(r);
         return Response.created(uriInfo.getBaseUriBuilder().path(Renew.class).path("request").path(r.getId()).build()).build();
@@ -73,9 +75,9 @@ public class Renew {
     @Path("request")
     @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_XML)
-    public Response request(JAXBElement<RequestDB.Request> req) {
+    public Response request(JAXBElement<RequestItem> req) {
 
-        RequestDB.Request r = req.getValue();
+        RequestItem r = req.getValue();
         RequestDB.add(r);
         return Response.ok(r.getId()).build();
 
@@ -97,12 +99,8 @@ public class Renew {
     @GET
     @Path("registration/requests")
     @Produces(MediaType.APPLICATION_XML)
-    public List<RequestDB.Request> getList() {
-        List<RequestDB.Request> l = new ArrayList<RequestDB.Request>();
-        for (RequestDB.Request r : RequestDB.getQueueList()) {
-            l.add(r);
-        }
-        return l;
+    public RequestList getList() {
+        return RequestDB.getQueueList();
     }
 
     @Path("registration/request/{request}")

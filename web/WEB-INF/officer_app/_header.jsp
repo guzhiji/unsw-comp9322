@@ -5,7 +5,7 @@
 <html>
     <head> 
         <meta charset="utf-8">
-        <title>RMS - Driver's App</title> 
+        <title>RMS - Officer's App</title> 
         <meta name="viewport" content="width=device-width, initial-scale=1"> 
         <link rel="stylesheet" href="/RMS/jquery.mobile-1.2.0.min.css" />
         <script src="/RMS/scripts/jquery.min.js"></script>
@@ -18,7 +18,7 @@
 
             <div data-role="header" data-position="fixed">
                 {$LeftButton}
-                <h1>RMS - Driver's App</h1>
+                <h1>RMS - Officer's App</h1>
                 {$RightButton}
                 {$TopNav}
             </div><!-- /header -->

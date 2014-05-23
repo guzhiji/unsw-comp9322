@@ -1,25 +1,26 @@
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
-    <head> 
+    <head>
         <meta charset="utf-8">
-        <title>RMS - Driver's App</title> 
+        <title>RMS - Officer's App</title> 
         <meta name="viewport" content="width=device-width, initial-scale=1"> 
         <link rel="stylesheet" href="/RMS/jquery.mobile-1.2.0.min.css" />
         <script src="/RMS/scripts/jquery.min.js"></script>
         <script src="/RMS/scripts/jquery.mobile-1.2.0.min.js"></script>
     </head> 
+    <body> 
 
-    <body>
+        <div data-role="dialog">
 
-        <div data-role="page">
+            <div data-role="header" data-theme="d">
+                <h1>RMS - Officer's App</h1>
+            </div>
 
-            <div data-role="header" data-position="fixed">
-                {$LeftButton}
-                <h1>RMS - Driver's App</h1>
-                {$RightButton}
-                {$TopNav}
-            </div><!-- /header -->
-            <div data-role="content">
+            <div data-role="content" data-theme="c">
+                <p>${errorMessage}</p>
+            </div>
+        </div>
+
+    </body>
+</html>

@@ -1,9 +1,11 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.db;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestList;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestStatus;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import javax.xml.bind.annotation.XmlRootElement;
 
 public class RequestDB {
 
@@ -18,114 +20,8 @@ public class RequestDB {
         }
     }
 
-    public static enum Status {
-
-        NEW, // wait for an officer
-        UNDER_REVIEW, // requester cannot modify
-        ACCEPTED, // requester needs to pay
-        ARCHIVED; // finished & officers won't see it
-    }
-
-    @XmlRootElement
-    public static class Request {
-
-        private String id;
-        private String lastName;
-        private String firstName;
-        private String licenceNumber;
-        private String regoNumber;
-        private String address;
-        private Status status;
-        private String rejectReason;
-
-        Request(Request r) {
-            lastName = r.lastName;
-            firstName = r.firstName;
-            licenceNumber = r.licenceNumber;
-            regoNumber = r.regoNumber;
-            address = r.address;
-            id = r.id;
-            status = r.status;
-            rejectReason = r.rejectReason;
-        }
-
-        public Request() {
-            status = Status.NEW;
-        }
-
-        public Request(String lname, String fname, String licence, String regoNum, String addr) {
-            lastName = lname;
-            firstName = fname;
-            licenceNumber = licence;
-            regoNumber = regoNum;
-            address = addr;
-            id = null;
-            status = Status.NEW;
-            rejectReason = null;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getLastName() {
-            return lastName;
-        }
-
-        public void setLastName(String lname) {
-            lastName = lname;
-        }
-
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public void setFirstName(String fname) {
-            firstName = fname;
-        }
-
-        public String getLicenceNumber() {
-            return licenceNumber;
-        }
-
-        public void setLicenceNumber(String licence) {
-            licenceNumber = licence;
-        }
-
-        public String getRegoNumber() {
-            return regoNumber;
-        }
-
-        public void setRegoNumber(String regoNum) {
-            regoNumber = regoNum;
-        }
-
-        public String getAddress() {
-            return address;
-        }
-
-        public void setAddress(String addr) {
-            address = addr;
-        }
-
-        public Status getStatus() {
-            return status;
-        }
-
-        public boolean isRejected() {
-            return rejectReason != null;
-        }
-
-        public String getRejectReason() {
-            return rejectReason;
-        }
-
-        public void setRejectReason(String reason) {
-            rejectReason = reason;
-        }
-    }
-    private static final ConcurrentLinkedQueue<Request> queue = new ConcurrentLinkedQueue<Request>();
-    private static final ConcurrentHashMap<String, Request> storage = new ConcurrentHashMap<String, Request>();
+    private static final ConcurrentLinkedQueue<RequestItem> queue = new ConcurrentLinkedQueue<RequestItem>();
+    private static final ConcurrentHashMap<String, RequestItem> storage = new ConcurrentHashMap<String, RequestItem>();
 
     public static String genKey() {
         String k;
@@ -135,22 +31,22 @@ public class RequestDB {
         return k;
     }
 
-    public synchronized static void add(Request r) {
-        r.id = genKey();
+    public synchronized static void add(RequestItem r) {
+        r.setId(genKey());
         queue.add(r);
-        storage.put(r.id, r);
+        storage.put(r.getId(), r);
     }
 
-    public synchronized static void update(String id, Request r) throws RequestDBException {
-        Request or = get(id);
+    public synchronized static void update(String id, RequestItem r) throws RequestDBException {
+        RequestItem or = get(id);
         queue.remove(or);
-        r.id = id;
+        r.setId(id);
         queue.add(r);
         storage.put(id, r);
     }
 
-    public static Request get(String id) throws RequestDBException {
-        Request r = storage.get(id);
+    public static RequestItem get(String id) throws RequestDBException {
+        RequestItem r = storage.get(id);
         if (r == null) {
             throw new RequestDBException("Request not found");
         }
@@ -161,22 +57,26 @@ public class RequestDB {
         return storage.containsKey(id);
     }
 
-    public synchronized static void updateStatus(String id, Status s) throws RequestDBException {
-        Request r = get(id);
-        if (s == Status.ARCHIVED) {
+    public synchronized static void updateStatus(String id, RequestStatus s) throws RequestDBException {
+        RequestItem r = get(id);
+        if (s == RequestStatus.ARCHIVED) {
             queue.remove(r);
-        } else if (r.status == Status.ARCHIVED) {
+        } else if (r.getStatus() == RequestStatus.ARCHIVED) {
             queue.add(r);
         }
-        r.status = s;
+        r.setStatus(s);
     }
 
-    public static Iterator<Request> getQueueIterator() {
+    public static Iterator<RequestItem> getQueueIterator() {
         return queue.iterator();
     }
 
-    public static Iterable<Request> getQueueList() {
-        return queue;
+    public static RequestList getQueueList() {
+        RequestList l = new RequestList();
+        l.addAll(queue);
+//        for (RequestItem r : queue)
+//            l.add(r);
+        return l;
     }
 
     public static int getQueueSize() {
@@ -187,12 +87,12 @@ public class RequestDB {
         return storage.size();
     }
 
-    public static Request peekQueue() {
+    public static RequestItem peekQueue() {
         return queue.peek();
     }
 
     public synchronized static void remove(String id) throws RequestDBException {
-        Request r = storage.remove(id);
+        RequestItem r = storage.remove(id);
         if (r == null) {
             throw new RequestDBException("Request not found");
         }

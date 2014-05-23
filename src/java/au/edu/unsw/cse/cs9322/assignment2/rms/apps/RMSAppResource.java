@@ -82,12 +82,12 @@ public abstract class RMSAppResource {
     protected String getUserId(HttpServletRequest req) {
         HttpSession sess = req.getSession(false);
         if (sess != null)
-            return (String) sess.getAttribute("user_id");
+            return (String) sess.getAttribute(appKey + "user_id");
         return null;
     }
 
     protected void setUserId(HttpServletRequest req, String id) {
         HttpSession sess = req.getSession();
-        sess.setAttribute("user_id", id);
+        sess.setAttribute(appKey + "user_id", id);
     }
 }
