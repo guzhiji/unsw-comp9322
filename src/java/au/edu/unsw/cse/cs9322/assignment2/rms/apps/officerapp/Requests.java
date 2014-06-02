@@ -3,10 +3,12 @@ package au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestList;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestStatus;
-
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,7 +20,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
-@Path("/requests")
+/*
+GET /RMS/apps/officer/request/list
+GET /RMS/apps/officer/request/list/[status]
+*/
+@Path("/request")
 public class Requests extends OfficerAppResource {
 
     public Requests(
@@ -27,62 +33,58 @@ public class Requests extends OfficerAppResource {
             @Context UriInfo uri) {
         super(req, resp, uri);
 
-        if (getUserId(req) == null)
-            raiseError("not authorized");
+        if (getUserId() == null)
+            raiseError("not authenticated");
     }
 
     @GET
+    @Path("list")
     @Produces(MediaType.TEXT_HTML)
     public void showRequests() throws IOException, ServletException {
-        showRequests("NEW");
+//        showRequests("NEW");
+        httpResponse.sendRedirect(getPathFromApp("request/list/NEW"));
+    }
+
+    private Set<Map.Entry<String, String>> getNavButtons() {
+        Map<String, String> btns = new HashMap<String, String>();
+        for (RequestStatus s : RequestStatus.values())
+            if (s != RequestStatus.ARCHIVED)
+                btns.put(s.name(), getPathFromApp("request/list/" + s.name()));
+
+        return btns.entrySet();
     }
 
     @GET
-    @Path("status/{status}")
+    @Path("list/{status}")
     @Produces(MediaType.TEXT_HTML)
     public void showRequests(
             @PathParam("status") String status)
             throws IOException, ServletException {
 
-        RequestStatus reqStatus = RequestStatus.valueOf(status);
+        // path
+        httpRequest.setAttribute("requestPathBase", getPathFromApp("request"));
+        httpRequest.setAttribute("logoutAction", getPathFromApp("logout"));
 
+        // status
+        RequestStatus reqStatus = RequestStatus.valueOf(status);
+        httpRequest.setAttribute("navButtons", getNavButtons());
+        httpRequest.setAttribute("navButtons_active", reqStatus.name());
+
+        // list
         List<RequestItem> toRemove = new ArrayList<RequestItem>();
-        RequestList list = getRequestBuilder(service.path("registration").path("requests"))
+        RequestList list = getRequestBuilder(
+                service.path("request").path("list"))
                 .accept(MediaType.APPLICATION_XML)
                 .get(RequestList.class);
-//        RequestList list=RequestDB.getQueueList();
+        //RequestList list=RequestDB.getQueueList();//for debug
         for (RequestItem r : list) {
             if (r.getStatus() != reqStatus)
                 toRemove.add(r);
         }
         list.removeAll(toRemove);
-
-        httpRequest.setAttribute("requestPathBase", getPath("requests"));
-        httpRequest.setAttribute("logoutAction", getPath("logout"));
-        httpRequest.setAttribute("statusList", RequestStatus.values());
         httpRequest.setAttribute("requestList", list);
 
         render("requests.jsp");
     }
 
-    @GET
-    @Path("{id}")
-    @Produces(MediaType.TEXT_HTML)
-    public void showRequestDetail(
-            @PathParam("id") String id)
-            throws IOException, ServletException {
-
-        try {
-
-            RequestItem r = getRequestBuilder(service.path("request").path(id))
-                    .accept(MediaType.APPLICATION_XML)
-                    .get(RequestItem.class);
-            httpRequest.setAttribute("requestDetail", r);
-            render("detail.jsp");
-
-        } catch (Exception ex) {
-            raiseError(ex);
-        }
-
-    }
 }

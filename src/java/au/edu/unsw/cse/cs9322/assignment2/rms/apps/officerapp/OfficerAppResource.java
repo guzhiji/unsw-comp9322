@@ -21,20 +21,16 @@ abstract class OfficerAppResource extends RMSAppResource {
         }
     }
 
-    protected String getPath(String p) {
-        UriBuilder b = uriInfo.getBaseUriBuilder().
-                path(OfficerHome.class);
-        if (p == null)
-            return b.build().getPath();
-        return b.path(p).build().getPath();
-    }
-
-    public OfficerAppResource(
+    protected OfficerAppResource(
             HttpServletRequest req,
             HttpServletResponse resp,
             UriInfo uri
     ) {
-        super("http://localhost:8084/RMS/rest/renew/", "officer_app", req, resp, uri);
+        super("officerapp", req, resp, uri);
+    }
+
+    protected String getPathFromApp(String p) {
+        return getPath(OfficerHome.class, p);
     }
 
 }

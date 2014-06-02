@@ -3,7 +3,17 @@ package au.edu.unsw.cse.cs9322.assignment2.rms.db;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestList;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestStatus;
+import au.edu.unsw.cse.cs9322.assignment2.rms.db.DBBackupService.AutoBackupCapableDB;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -20,87 +30,211 @@ public class RequestDB {
         }
     }
 
-    private static final ConcurrentLinkedQueue<RequestItem> queue = new ConcurrentLinkedQueue<RequestItem>();
-    private static final ConcurrentHashMap<String, RequestItem> storage = new ConcurrentHashMap<String, RequestItem>();
+    private static class DB implements AutoBackupCapableDB {
 
-    public static String genKey() {
-        String k;
-        do {
-            k = String.valueOf(System.currentTimeMillis()) + String.valueOf((int) (Math.random() * 1000));
-        } while (storage.containsKey(k));
-        return k;
+        final ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<String>();
+        final ConcurrentHashMap<String, RequestItem> storage = new ConcurrentHashMap<String, RequestItem>();
+        boolean modified = false;
+
+        String genKey() {
+            String k;
+            do {
+                k = String.valueOf(System.currentTimeMillis()) + String.valueOf((int) (Math.random() * 1000));
+            } while (storage.containsKey(k));
+            return k;
+        }
+
+        synchronized void add(RequestItem r) {
+            r.setId(genKey());
+            queue.add(r.getId());
+            storage.put(r.getId(), r);
+            modified = true;
+        }
+
+        synchronized void update(String id, RequestItem r) throws RequestDBException {
+            // retrieve the request and validate its exsitence
+            RequestItem or = get(id);
+            // overwrite some attributes that are not allowed to change
+            r.setId(id);
+            r.setAutoCheckResultId(or.getAutoCheckResultId());
+            r.setPaymentId(or.getPaymentId());
+            r.setRejectReason(or.getRejectReason());
+            r.setStatus(or.getStatus());
+            // refresh the queue
+            queue.remove(id);
+            queue.add(id);
+            // update the storage
+            storage.put(id, r);
+            modified = true;
+        }
+
+        RequestItem get(String id) throws RequestDBException {
+            RequestItem r = storage.get(id);
+            if (r == null) {
+                throw new RequestDBException("Request not found");
+            }
+            return r;
+        }
+
+        boolean exists(String id) {
+            return storage.containsKey(id);
+        }
+
+        synchronized void updateStatus(String id, RequestStatus s) throws RequestDBException {
+            RequestItem r = get(id);
+            if (s == RequestStatus.ARCHIVED) {
+                queue.remove(r.getId());
+            } else if (r.getStatus() == RequestStatus.ARCHIVED) {
+                queue.add(r.getId());
+            }
+            r.setStatus(s);
+            modified = true;
+        }
+
+        Iterator<String> getQueueIterator() {
+            return queue.iterator();
+        }
+
+        RequestList getList() {
+            RequestList l = new RequestList();
+            for (String r : queue)
+                l.add(storage.get(r));
+            return l;
+        }
+
+        int getQueueSize() {
+            return queue.size();
+        }
+
+        int getSize() {
+            return storage.size();
+        }
+
+        String peekQueue() {
+            return queue.peek();
+        }
+
+        synchronized void remove(String id) throws RequestDBException {
+            RequestItem r = storage.remove(id);
+            if (r == null) {
+                throw new RequestDBException("Request not found");
+            }
+            queue.remove(id);
+            modified = true;
+        }
+
+        synchronized void clear() {
+            storage.clear();
+            queue.clear();
+            modified = true;
+        }
+
+        @Override
+        public void backUp(File path) {
+
+            File repo = new File(path, RequestDB.class.getSimpleName());
+            repo.mkdir();
+
+            // queue
+            File queuefile = new File(repo, "queue");
+            try {
+                if (queue.isEmpty()) {
+                    if (queuefile.exists()) {
+                        XMLDecoder dec = new XMLDecoder(new BufferedInputStream(
+                                new FileInputStream(queuefile)));
+                        queue.addAll((Collection<String>) dec.readObject());
+                        dec.close();
+                    }
+                } else if (modified) {
+                    XMLEncoder enc = new XMLEncoder(new BufferedOutputStream(
+                            new FileOutputStream(queuefile)));
+                    enc.writeObject(queue);
+                    enc.close();
+                }
+            } catch (Exception ex) {
+            }
+
+            // map
+            File storagefile = new File(repo, "storage");
+            try {
+                if (storage.isEmpty()) {
+                    if (storagefile.exists()) {
+                        XMLDecoder dec = new XMLDecoder(new BufferedInputStream(
+                                new FileInputStream(storagefile)));
+                        storage.putAll((Map<String, RequestItem>) dec.readObject());
+                        dec.close();
+                    }
+                } else if (modified) {
+                    XMLEncoder enc = new XMLEncoder(new BufferedOutputStream(
+                            new FileOutputStream(storagefile)));
+                    enc.writeObject(storage);
+                    enc.close();
+                }
+                modified = false;
+            } catch (Exception ex) {
+            }
+
+        }
+
     }
 
-    public synchronized static void add(RequestItem r) {
-        r.setId(genKey());
-        queue.add(r);
-        storage.put(r.getId(), r);
+    public static void add(RequestItem r) {
+        instance.add(r);
     }
 
-    public synchronized static void update(String id, RequestItem r) throws RequestDBException {
-        RequestItem or = get(id);
-        queue.remove(or);
-        r.setId(id);
-        queue.add(r);
-        storage.put(id, r);
+    public static void update(String id, RequestItem r) throws RequestDBException {
+        instance.update(id, r);
     }
 
     public static RequestItem get(String id) throws RequestDBException {
-        RequestItem r = storage.get(id);
-        if (r == null) {
-            throw new RequestDBException("Request not found");
-        }
-        return r;
+        return instance.get(id);
     }
 
     public static boolean exists(String id) {
-        return storage.containsKey(id);
+        return instance.exists(id);
     }
 
-    public synchronized static void updateStatus(String id, RequestStatus s) throws RequestDBException {
-        RequestItem r = get(id);
-        if (s == RequestStatus.ARCHIVED) {
-            queue.remove(r);
-        } else if (r.getStatus() == RequestStatus.ARCHIVED) {
-            queue.add(r);
-        }
-        r.setStatus(s);
+    public static void updateStatus(String id, RequestStatus s) throws RequestDBException {
+        instance.updateStatus(id, s);
     }
 
-    public static Iterator<RequestItem> getQueueIterator() {
-        return queue.iterator();
+    public static Iterator<String> getQueueIterator() {
+        return instance.getQueueIterator();
     }
 
-    public static RequestList getQueueList() {
-        RequestList l = new RequestList();
-        l.addAll(queue);
-//        for (RequestItem r : queue)
-//            l.add(r);
-        return l;
+    public static RequestList getList() {
+        return instance.getList();
     }
 
     public static int getQueueSize() {
-        return queue.size();
+        return instance.getQueueSize();
     }
 
     public static int getSize() {
-        return storage.size();
+        return instance.getSize();
     }
 
-    public static RequestItem peekQueue() {
-        return queue.peek();
+    public static String peekQueue() {
+        return instance.peekQueue();
     }
 
-    public synchronized static void remove(String id) throws RequestDBException {
-        RequestItem r = storage.remove(id);
-        if (r == null) {
-            throw new RequestDBException("Request not found");
-        }
-        queue.remove(r);
+    public static void remove(String id) throws RequestDBException {
+        instance.remove(id);
     }
 
-    public synchronized static void clear() {
-        storage.clear();
-        queue.clear();
+    public static void clear() {
+        instance.clear();
     }
+
+    private final static DB instance;
+
+    static {
+        instance = new DB();
+        DBBackupService.register(instance);
+    }
+
+    private RequestDB() {
+
+    }
+
 }

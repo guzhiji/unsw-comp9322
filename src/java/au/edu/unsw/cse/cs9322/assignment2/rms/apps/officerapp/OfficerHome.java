@@ -15,6 +15,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+/*
+GET /RMS/apps/officer/
+GET /RMS/apps/officer/login
+POST /RMS/apps/officer/login
+POST /RMS/apps/officer/logout
+*/
 @Path("/")
 public class OfficerHome extends OfficerAppResource {
 
@@ -28,7 +34,7 @@ public class OfficerHome extends OfficerAppResource {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public void show() throws IOException, ServletException {
-        httpRequest.setAttribute("formAction", getPath("login"));
+        httpRequest.setAttribute("formAction", getPathFromApp("login"));
         render("login.jsp");
     }
 
@@ -51,8 +57,8 @@ public class OfficerHome extends OfficerAppResource {
         String id = USER_DB.getUserId(username, password);
 
         if (id != null) {
-            setUserId(httpRequest, id);
-            httpResponse.sendRedirect(getPath("requests"));
+            setUserId(id);
+            httpResponse.sendRedirect(getPathFromApp("request/list/NEW"));
         } else {
             raiseError("Password may be wrong for the user.", "login.jsp");
         }
@@ -67,7 +73,7 @@ public class OfficerHome extends OfficerAppResource {
         if (sess != null) {
             sess.invalidate();
         }
-        httpResponse.sendRedirect(getPath(null));
+        httpResponse.sendRedirect(getPathFromApp(null));
 
     }
 }

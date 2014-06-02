@@ -1,10 +1,13 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.apps;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp.DriverHome;
+import au.edu.unsw.cse.cs9322.assignment2.rms.db.DBBackupService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -13,41 +16,58 @@ import javax.servlet.http.HttpSession;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 public abstract class RMSAppResource {
 
     protected WebResource service;
+    protected String appName;
     protected String appKey;
 
     protected HttpServletRequest httpRequest;
     protected HttpServletResponse httpResponse;
     protected UriInfo uriInfo;
 
-    public RMSAppResource(
-            String service_uri,
-            String app_key,
+    protected RMSAppResource(
+            String app_name,
             HttpServletRequest req,
             HttpServletResponse resp,
             UriInfo uri
     ) {
 
+        ResourceBundle res = ResourceBundle.getBundle(
+                RMSAppResource.class.getPackage().getName()
+                + "." + app_name + ".config");
+
         ClientConfig config = new DefaultClientConfig();
         Client client = Client.create(config);
-        appKey = app_key;
-        service = client.resource(service_uri);
+        service = client.resource(res.getString("service_uri"));//client.resource(service_uri);
+        appKey = res.getString("app_key");//app_key;
+
+        appName = app_name;
         httpRequest = req;
         httpResponse = resp;
         uriInfo = uri;
+
+        DBBackupService.checkStarted(httpRequest.getServletContext().getRealPath("/WEB-INF/data"));
     }
 
     protected WebResource.Builder getRequestBuilder(WebResource res) {
         return res.header("app_key", appKey);
     }
 
+    protected String getPath(Class cls, String p) {
+        UriBuilder b = uriInfo.getBaseUriBuilder().path(cls);
+        if (p == null)
+            return b.build().getPath();
+        return b.path(p).build().getPath();
+    }
+
     protected void render(String page)
             throws ServletException, IOException {
-        RequestDispatcher rd = httpRequest.getRequestDispatcher("/WEB-INF/" + appKey + "/" + page);
+        RequestDispatcher rd = httpRequest.getRequestDispatcher(
+                "/WEB-INF/" + appName + "/" + page);
         rd.forward(httpRequest, httpResponse);
     }
 
@@ -79,15 +99,15 @@ public abstract class RMSAppResource {
                 .type(MediaType.TEXT_HTML).build());
     }
 
-    protected String getUserId(HttpServletRequest req) {
-        HttpSession sess = req.getSession(false);
+    protected String getUserId() {
+        HttpSession sess = httpRequest.getSession(false);
         if (sess != null)
-            return (String) sess.getAttribute(appKey + "user_id");
+            return (String) sess.getAttribute(appName + "user_id");
         return null;
     }
 
-    protected void setUserId(HttpServletRequest req, String id) {
-        HttpSession sess = req.getSession();
-        sess.setAttribute(appKey + "user_id", id);
+    protected void setUserId(String id) {
+        HttpSession sess = httpRequest.getSession();
+        sess.setAttribute(appName + "user_id", id);
     }
 }

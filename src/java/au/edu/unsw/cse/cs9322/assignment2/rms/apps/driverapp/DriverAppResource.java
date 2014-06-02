@@ -4,19 +4,22 @@ import au.edu.unsw.cse.cs9322.assignment2.rms.apps.RMSAppResource;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserDB;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 abstract class DriverAppResource extends RMSAppResource {
 
     protected final static UserDB USER_DB = new UserDB();
 
-    protected String getPath(String p) {
-        UriBuilder b = uriInfo.getBaseUriBuilder().
-                path(DriverHome.class);
-        if (p == null)
-            return b.build().getPath();
-        return b.path(p).build().getPath();
+    protected DriverAppResource(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            UriInfo uri
+    ) {
+        super("driverapp", req, resp, uri);
+    }
+
+    protected String getPathFromApp(String p) {
+        return getPath(DriverHome.class, p);
     }
 
     protected String genKey(
@@ -41,14 +44,6 @@ abstract class DriverAppResource extends RMSAppResource {
 
         return sb.toString();
 
-    }
-
-    public DriverAppResource(
-            HttpServletRequest req,
-            HttpServletResponse resp,
-            UriInfo uri
-    ) {
-        super("http://localhost:8084/RMS/rest/renew/", "driver_app", req, resp, uri);
     }
 
 }

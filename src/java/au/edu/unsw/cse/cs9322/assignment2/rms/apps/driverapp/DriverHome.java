@@ -14,11 +14,21 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+/*
+GET /RMS/apps/driver/
+GET /RMS/apps/driver/login
+GET /RMS/apps/driver/login/[id]
+POST /RMS/apps/driver/login
+POST /RMS/apps/driver/logout
+GET /RMS/apps/driver/request
+POST /RMS/apps/driver/request
+*/
 @Path("/")
 public class DriverHome extends DriverAppResource {
 
@@ -32,7 +42,7 @@ public class DriverHome extends DriverAppResource {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public void show() throws IOException, ServletException {
-        httpRequest.setAttribute("formAction", getPath("login"));
+        httpRequest.setAttribute("formAction", getPathFromApp("login"));
         render("login.jsp");
     }
 
@@ -41,6 +51,23 @@ public class DriverHome extends DriverAppResource {
     @Produces(MediaType.TEXT_HTML)
     public void showLogin() throws IOException, ServletException {
         show();
+    }
+
+    @GET
+    @Path("login/{id}")
+    @Produces(MediaType.TEXT_HTML)
+    public void login(@PathParam("id") String id) throws IOException, ServletException {
+        ClientResponse r = getRequestBuilder(
+                service.path("request").path("renew").path(id))
+                .accept(MediaType.APPLICATION_XML)
+                .get(ClientResponse.class);
+        if (r.getStatus() == 200) {
+            setUserId(id);
+            httpResponse.sendRedirect(getPathFromApp("myrequest"));
+        } else {
+            setUserId(null);
+            httpResponse.sendRedirect(getPathFromApp("login"));
+        }
     }
 
     @POST
@@ -58,8 +85,8 @@ public class DriverHome extends DriverAppResource {
             String id = USER_DB.getUserId(genKey(fname, lname, rego_num), password);
 
             if (id != null) {
-                setUserId(httpRequest, id);
-                httpResponse.sendRedirect(getPath("myrequest"));
+                setUserId(id);
+                httpResponse.sendRedirect(getPathFromApp("myrequest"));
             } else {
                 raiseError("Password may be wrong for the user.", "login.jsp");
             }
@@ -76,7 +103,7 @@ public class DriverHome extends DriverAppResource {
         HttpSession sess = httpRequest.getSession(false);
         if (sess != null)
             sess.invalidate();
-        httpResponse.sendRedirect(getPath(null));
+        httpResponse.sendRedirect(getPathFromApp(null));
 
     }
 
@@ -85,11 +112,11 @@ public class DriverHome extends DriverAppResource {
     @Produces(MediaType.TEXT_HTML)
     public void showRequestForm() throws IOException, ServletException {
 
-        httpRequest.setAttribute("formAction", getPath("request"));
+        httpRequest.setAttribute("formAction", getPathFromApp("request"));
 
-        String id = getUserId(httpRequest);
+        String id = getUserId();
         if (id != null)
-            httpResponse.sendRedirect(getPath("myrequest"));
+            httpResponse.sendRedirect(getPathFromApp("myrequest"));
         else
             render("form.jsp");
 
@@ -120,7 +147,8 @@ public class DriverHome extends DriverAppResource {
             form.add("rego_number", rego_num);
             form.add("address", address);
 
-            ClientResponse response = getRequestBuilder(service.path("request"))
+            ClientResponse response = getRequestBuilder(
+                    service.path("request").path("renew"))
                     .type(MediaType.APPLICATION_FORM_URLENCODED)
                     .post(ClientResponse.class, form);
 
@@ -130,10 +158,10 @@ public class DriverHome extends DriverAppResource {
                 id = id.substring(id.lastIndexOf('/'));
                 System.out.println("Form response: request id=" + id);
                 USER_DB.register(key, password, id);
-                setUserId(httpRequest, id);
-                httpResponse.sendRedirect(getPath("myrequest"));
+                setUserId(id);
+                httpResponse.sendRedirect(getPathFromApp("myrequest"));
             } else
-                raiseError("service error:" + response.getStatus() + "," + service.path("request").toString());
+                raiseError("service error:" + response.getStatus());
 
         } catch (UserDBException dbex) {
             raiseError(dbex, "form.jsp");

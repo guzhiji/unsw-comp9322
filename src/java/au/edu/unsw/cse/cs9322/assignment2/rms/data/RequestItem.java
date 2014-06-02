@@ -13,6 +13,8 @@ public class RequestItem {
     private String address;
     private RequestStatus status;
     private String rejectReason;
+    private String paymentId;
+    private String autoCheckResultId;
 
     RequestItem(RequestItem r) {
         lastName = r.lastName;
@@ -29,7 +31,7 @@ public class RequestItem {
         status = RequestStatus.NEW;
     }
 
-    public RequestItem(String lname, String fname, String licence, 
+    public RequestItem(String lname, String fname, String licence,
             String regoNum, String addr) {
         lastName = lname;
         firstName = fname;
@@ -41,8 +43,8 @@ public class RequestItem {
         rejectReason = null;
     }
 
-    public RequestItem(String rid, RequestStatus s, String lname, 
-            String fname, String licence, String regoNum, String addr, 
+    public RequestItem(String rid, RequestStatus s, String lname,
+            String fname, String licence, String regoNum, String addr,
             String reason) {
         id = rid;
         status = s;
@@ -120,5 +122,21 @@ public class RequestItem {
 
     public void setRejectReason(String reason) {
         rejectReason = reason;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String id) {
+        paymentId = id;
+    }
+
+    public String getAutoCheckResultId() {
+        return autoCheckResultId;
+    }
+
+    public void setAutoCheckResultId(String id) {
+        autoCheckResultId = id;
     }
 }
