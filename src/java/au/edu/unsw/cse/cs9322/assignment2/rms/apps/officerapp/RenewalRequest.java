@@ -6,6 +6,7 @@ import au.edu.unsw.cse.cs9322.assignment2.rms.data.Payment;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.SoapCheckerMessage;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.representation.Form;
 import java.io.IOException;
 import java.util.Date;
@@ -100,16 +101,18 @@ public class RenewalRequest extends OfficerAppResource {
     @POST
     @Path("review")
     @Produces(MediaType.TEXT_HTML)
-    public void review() {
+    public void review() throws IOException {
         try {
-            RequestItem r = getRequestBuilder(
+
+            ClientResponse r = getRequestBuilder(
                     service.path("request").path("renew").path(id).path("review"))
                     .accept(MediaType.APPLICATION_XML)
-                    .put(RequestItem.class);
-
+                    .put(ClientResponse.class);
+            if (r.getStatus() != 200)
+                raiseError("Status was not successfully changed to UNDER-REVIEW." + r.getEntity(String.class));
             httpResponse.sendRedirect(getPathFromApp("request/renew/" + id));
 
-        } catch (Exception ex) {
+        } catch (UniformInterfaceException ex) {
             raiseError(ex);
         }
     }
@@ -260,8 +263,7 @@ public class RenewalRequest extends OfficerAppResource {
 
             if (r.getStatus() != 201)
                 // check result wasn't saved successfully
-//                raiseError(r.getEntity(String.class));
-                raiseError("wan't created successfully, status=" + r.getStatus());
+                raiseError(r.getEntity(String.class));
 
             String crid = r.getLocation().getPath();
             crid = crid.substring(crid.lastIndexOf('/', crid.length() - 2) + 1);

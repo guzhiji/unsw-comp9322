@@ -16,6 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 
@@ -55,7 +56,11 @@ public class CheckResult extends RMSService {
 
             return Response.created(uri).build();
 
-        } catch (Exception ex) {
+        } catch (CheckResultDBException ex) {
+            return raiseError(400, ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            return raiseError(400, ex.getMessage());
+        } catch (UriBuilderException ex) {
             return raiseError(400, ex.getMessage());
         }
 

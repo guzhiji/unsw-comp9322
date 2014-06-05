@@ -24,7 +24,7 @@ public abstract class RMSService {
     /**
      * app => allowed operations
      */
-    protected static Map<String, Set<String>> permissions;
+    protected Map<String, Set<String>> permissions;
 
     protected RMSService(
             HttpServletRequest req,
