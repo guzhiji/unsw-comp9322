@@ -15,8 +15,7 @@ public class GreenSlipChecker extends AbstractSoapChecker {
             String pkg,
             ResourceBundle res,
             Enumeration<String> keys,
-            SoapCheckerMessage msg
-    ) throws SoapCheckerException {
+            SoapCheckerMessage msg) {
 
         while (keys.hasMoreElements()) {
 
@@ -43,11 +42,19 @@ public class GreenSlipChecker extends AbstractSoapChecker {
                     msg.setGreenSlip(m);
                     Logger.getLogger(p).log(Level.INFO, "find a green slip from provider {0}", p);
                     return msg;
+                } else {
+                    exceptions.add(new GreenSlipProviderException(p, "not paid for a green slip"));
+                    Logger.getLogger(p).log(Level.INFO, "registered with green slip provider {0} but not paid", p);
                 }
 
             } catch (GreenSlipProviderException ex) {
-                exceptions.add(ex);
 
+                exceptions.add(ex);
+                Logger.getLogger(p).log(Level.INFO, ex.getMessage());
+
+            } catch (Exception ex) {
+
+                exceptions.add(ex);
                 Logger.getLogger(p).log(Level.WARNING, "exception caught", ex);
 
             }

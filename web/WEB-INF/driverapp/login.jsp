@@ -28,7 +28,12 @@
             <input type="password" name="password" id="password" value="" />
         </li>
         <li>
-            <button type="submit" data-theme="a">Login</button>
+            <fieldset class="ui-grid-a">
+                <div class="ui-block-a"><button type="submit" data-theme="a">Login</button></div>
+                <div class="ui-block-b"><a href="${requestForm}" 
+                                           data-role="button" data-theme="d">Request</a></div>
+            </fieldset>
+
         </li>
     </ul>
 </form>

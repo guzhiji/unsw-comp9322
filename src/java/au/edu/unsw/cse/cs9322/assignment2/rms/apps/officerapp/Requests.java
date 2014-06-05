@@ -21,9 +21,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 /*
-GET /RMS/apps/officer/request/list
-GET /RMS/apps/officer/request/list/[status]
-*/
+ GET /RMS/apps/officer/request/list
+ GET /RMS/apps/officer/request/list/[status]
+ */
 @Path("/request")
 public class Requests extends OfficerAppResource {
 
@@ -35,6 +35,7 @@ public class Requests extends OfficerAppResource {
 
         if (getUserId() == null)
             raiseError("not authenticated");
+        httpRequest.setAttribute("homePage", getPathFromApp("request/list/NEW"));
     }
 
     @GET

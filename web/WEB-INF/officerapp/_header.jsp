@@ -18,11 +18,12 @@
 
             <div data-role="header" data-position="fixed">
 
-                <a href="#" 
-                        data-role="button" 
-                        data-icon="home" 
-                        data-rel="back" 
-                        data-theme="a">Home</a>
+                <c:if test="${not empty homePage}">
+                    <a href="${homePage}" 
+                       data-role="button" 
+                       data-icon="home" 
+                       data-theme="a">Home</a>
+                </c:if>
 
                 <h1>RMS - Officer's App</h1>
 

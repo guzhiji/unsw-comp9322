@@ -51,9 +51,9 @@ public class GZJPinkSlipProvider implements PinkSlipProvider {
 
             return psm;
         } catch (GZJPinkSlipProviderPinkSlipProvider_PinkSlipProviderExceptionException ex) {
-            throw new PinkSlipProviderException(ex.getMessage());
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex);
         } catch (RemoteException ex) {
-            throw new PinkSlipProviderException(ex);
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex);
         }
 
     }
@@ -77,9 +77,9 @@ public class GZJPinkSlipProvider implements PinkSlipProvider {
 
             return vm;
         } catch (GZJPinkSlipProviderPinkSlipProvider_PinkSlipProviderExceptionException ex) {
-            throw new PinkSlipProviderException(ex.getMessage());
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex);
         } catch (RemoteException ex) {
-            throw new PinkSlipProviderException(ex);
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex);
         }
     }
 }

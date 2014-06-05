@@ -108,6 +108,9 @@ public class PaymentDB {
     public static void clear() {
         instance.clear();
     }
+
+    public static void checkInit() {
+    }
     private final static DB instance;
 
     static {

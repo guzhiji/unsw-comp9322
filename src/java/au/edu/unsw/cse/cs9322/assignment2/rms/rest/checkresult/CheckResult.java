@@ -59,11 +59,14 @@ public class CheckResult extends RMSService {
 
             URI uri = uriInfo.getBaseUriBuilder()
                     .path(CheckResult.class)
-                    .build(msg.getId());
+                    .path("result")
+                    .path(msg.getId())
+                    .build();
 
             return Response.created(uri).build();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             return raiseError(400, ex.getMessage());
         }
 

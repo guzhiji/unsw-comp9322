@@ -45,25 +45,21 @@ public class RequestDB {
         }
 
         synchronized void add(RequestItem r) {
-            r.setId(genKey());
-            queue.add(r.getId());
-            storage.put(r.getId(), r);
+            String id = genKey();
+            r.setId(id);
+            queue.add(id);
+            storage.put(id, r);
             modified = true;
         }
 
         synchronized void update(String id, RequestItem r) throws RequestDBException {
-            // retrieve the request and validate its exsitence
-            RequestItem or = get(id);
-            // overwrite some attributes that are not allowed to change
-            r.setId(id);
-            r.setAutoCheckResultId(or.getAutoCheckResultId());
-            r.setPaymentId(or.getPaymentId());
-            r.setRejectReason(or.getRejectReason());
-            r.setStatus(or.getStatus());
+            // validate id
+            get(id);
             // refresh the queue
             queue.remove(id);
             queue.add(id);
             // update the storage
+            r.setId(id);
             storage.put(id, r);
             modified = true;
         }
@@ -226,6 +222,10 @@ public class RequestDB {
         instance.clear();
     }
 
+    public static void checkInit() {
+        PaymentDB.checkInit();
+        CheckResultDB.checkInit();
+    }
     private final static DB instance;
 
     static {

@@ -54,7 +54,7 @@ public abstract class AbstractSoapChecker {
             return c.newInstance(url);
         } catch (Exception ex) {
             exceptions.add(ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             return null;
         }
     }
@@ -68,7 +68,7 @@ public abstract class AbstractSoapChecker {
             ResourceBundle res,
             Enumeration<String> keys,
             SoapCheckerMessage msg
-    ) throws SoapCheckerException;
+    );
 
     public void check(SoapCheckerMessage msg) throws SoapCheckerException {
 

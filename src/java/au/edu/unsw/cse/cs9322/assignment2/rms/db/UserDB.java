@@ -58,4 +58,8 @@ public class UserDB {
     public void unregister(String username) {
         storage.remove(username);
     }
+
+    public static void checkInit() {
+    }
+
 }

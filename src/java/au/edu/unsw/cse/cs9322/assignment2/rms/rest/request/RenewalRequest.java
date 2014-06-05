@@ -2,18 +2,14 @@ package au.edu.unsw.cse.cs9322.assignment2.rms.rest.request;
 
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestStatus;
-import au.edu.unsw.cse.cs9322.assignment2.rms.db.PaymentDB;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB;
 import au.edu.unsw.cse.cs9322.assignment2.rms.rest.RMSService;
-import au.edu.unsw.cse.cs9322.assignment2.rms.rest.payment.RMSPayment;
-import java.net.URI;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,12 +21,9 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 
 /**
- * GET /RMS/rest/request/renew/[id]
- * PUT /RMS/rest/request/renew/[id]
- * DELETE /RMS/rest/request/renew/[id]
- * PUT /RMS/rest/request/renew/[id]/accept
- * PUT /RMS/rest/request/renew/[id]/reject
- * PUT /RMS/rest/request/renew/[id]/review
+ * GET /RMS/rest/request/renew/[id] PUT /RMS/rest/request/renew/[id] DELETE
+ * /RMS/rest/request/renew/[id] PUT /RMS/rest/request/renew/[id]/accept PUT
+ * /RMS/rest/request/renew/[id]/reject PUT /RMS/rest/request/renew/[id]/review
  *
  * URL pattern: /rest/request/renew/...
  */
@@ -93,6 +86,13 @@ public class RenewalRequest extends RMSService {
 
         try {
             RequestItem nr = req.getValue();
+            // overwrite some attributes that are not allowed to change
+            nr.setId(renewalReq.getId());
+            nr.setAutoCheckResultId(renewalReq.getAutoCheckResultId());
+            nr.setPaymentId(renewalReq.getPaymentId());
+            nr.setRejectReason(renewalReq.getRejectReason());
+            nr.setStatus(renewalReq.getStatus());
+            // save
             RequestDB.update(renewalReq.getId(), nr);
             renewalReq = nr;
             return Response.ok().build();
@@ -154,11 +154,28 @@ public class RenewalRequest extends RMSService {
         }
     }
 
+    @PUT
+    @Path("checkresult")
+    @Produces(MediaType.APPLICATION_XML)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response updateCheckResult(
+            @FormParam("crid") String crid) {
+
+        //checkAppPermission("updateCheckResult");
+        renewalReq.setAutoCheckResultId(crid);
+
+        try {
+            RequestDB.update(renewalReq.getId(), renewalReq);
+            return Response.ok().build();
+        } catch (RequestDB.RequestDBException ex) {
+            return raiseError(400, ex.getMessage());
+        }
+    }
+
     /**
      *
      * URL pattern: /rest/request/renew/[id]/accept
      *
-     * @param amount
      * @return
      */
     @PUT
@@ -166,20 +183,15 @@ public class RenewalRequest extends RMSService {
     @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response accept(
-            @FormParam("amount") float amount) {
+            @FormParam("payment_id") String pid) {
 
         //checkAppPermission("accept");
+        renewalReq.setPaymentId(pid);
         try {
-
             RequestDB.updateStatus(renewalReq.getId(), RequestStatus.ACCEPTED);
 //            PaymentDB.create(renewalReq.getId(), amount);
 
-            URI uri = uriInfo.getBaseUriBuilder()
-                    .path(RMSPayment.class)
-                    .path(renewalReq.getId())
-                    .build();
-
-            return Response.created(uri).build();
+            return Response.ok().build();
 
         } catch (RequestDB.RequestDBException ex) {
             return raiseError(400, ex.getMessage());

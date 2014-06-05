@@ -43,9 +43,9 @@ public class GZJGreenSlipProvider implements GreenSlipProvider {
 
             return gsm;
         } catch (GZJGreenSlipProviderGreenSlipProvider_GreenSlipProviderExceptionException ex) {
-            throw new GreenSlipProviderException(ex.getMessage());
+            throw new GreenSlipProviderException(getClass().getSimpleName(), ex);
         } catch (RemoteException ex) {
-            throw new GreenSlipProviderException(ex);
+            throw new GreenSlipProviderException(getClass().getSimpleName(), ex);
         }
 
     }

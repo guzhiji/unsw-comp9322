@@ -14,6 +14,8 @@ import au.edu.unsw.cse.cs9322.assignment2.rms.data.VehicleMessage;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
 import org.apache.axis2.AxisFault;
 
 public class ASDPinkSlipProvider implements PinkSlipProvider {
@@ -54,15 +56,19 @@ public class ASDPinkSlipProvider implements PinkSlipProvider {
 
             return psm;
         } catch (RemoteException ex) {
-            throw new PinkSlipProviderException(ex);
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex);
         } catch (PinkSlipServicesPSCheckFaultExceptionException ex) {
-            throw new PinkSlipProviderException(ex.getMessage());
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex.getMessage());
         }
 
     }
 
     @Override
     public VehicleMessage getVehicleInfo(String fname, String lname, String rego) throws PinkSlipProviderException {
+
+        SimpleDateFormat df = new SimpleDateFormat("d/M/yyyy", Locale.ENGLISH);
+        TimeZone tz = TimeZone.getTimeZone("GMT");
+        df.setTimeZone(tz);
 
         try {
             VehicleInfo info = new VehicleInfo();
@@ -73,16 +79,16 @@ public class ASDPinkSlipProvider implements PinkSlipProvider {
             VehicleMessage vm = new VehicleMessage();
             vm.setFirstName(fname);
             vm.setLastName(lname);
-            vm.setManufacturedDate(SimpleDateFormat.getInstance().parse(msg.getManufacturedDate()));
+            vm.setManufacturedDate(df.parse(msg.getManufacturedDate()));
             vm.setRegoNumber(rego);
             vm.setVehicleType(msg.getVehicleType());
             return vm;
         } catch (ParseException ex) {
-            throw new PinkSlipProviderException(ex.getMessage());
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex);
         } catch (RemoteException ex) {
-            throw new PinkSlipProviderException(ex);
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex);
         } catch (PinkSlipServicesPSCheckFaultExceptionException ex) {
-            throw new PinkSlipProviderException(ex.getMessage());
+            throw new PinkSlipProviderException(getClass().getSimpleName(), ex);
         }
 
     }

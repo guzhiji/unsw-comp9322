@@ -45,9 +45,9 @@ public class ASDGreenSlipProvider implements GreenSlipProvider {
 
             return gsm;
         } catch (RemoteException ex) {
-            throw new GreenSlipProviderException(ex);
+            throw new GreenSlipProviderException(getClass().getSimpleName(), ex);
         } catch (GreenSlipServicesGSCheckFaultExceptionException ex) {
-            throw new GreenSlipProviderException(ex.getMessage());
+            throw new GreenSlipProviderException(getClass().getSimpleName(), ex);
         }
 
     }

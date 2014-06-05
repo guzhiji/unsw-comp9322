@@ -17,8 +17,7 @@ public class PinkSlipChecker extends AbstractSoapChecker {
             String pkg,
             ResourceBundle res,
             Enumeration<String> keys,
-            SoapCheckerMessage msg
-    ) throws SoapCheckerException {
+            SoapCheckerMessage msg) {
 
         while (keys.hasMoreElements()) {
 
@@ -52,6 +51,9 @@ public class PinkSlipChecker extends AbstractSoapChecker {
                             msg.getFirstName(),
                             msg.getLastName(),
                             msg.getRegoNumber());
+
+                    if (!ps.getCheckedFlag())
+                        throw new PinkSlipProviderException(p, "not checked for a pink slip");
                     msg.setPinkSlip(ps);
 
                 }
@@ -59,6 +61,10 @@ public class PinkSlipChecker extends AbstractSoapChecker {
                 // reaching here without any error means successful
                 Logger.getLogger(p).log(Level.INFO, "find a pink slip from provider {0}", p);
                 return msg;
+
+            } catch (PinkSlipProviderException ex) {
+                exceptions.add(ex);
+                Logger.getLogger(p).log(Level.INFO, ex.getMessage());
 
             } catch (Exception ex) {
                 exceptions.add(ex);
