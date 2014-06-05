@@ -1,8 +1,10 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.Driver;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserIdDB;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserIdDB.UserIdDBException;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.representation.Form;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -152,6 +154,21 @@ public class DriverHome extends DriverAppResource {
         try {
 
             USER_ID_DB.checkUserInfo(fname, lname, rego_num, password);
+
+            try {
+
+                String regoKey = Driver.genKey(
+                        lname,
+                        fname,
+                        rego_num);
+                getRequestBuilder(
+                        service.path("rego").path(regoKey))
+                        .accept(MediaType.APPLICATION_XML)
+                        .get(Driver.class);
+
+            } catch (UniformInterfaceException ex) {
+                raiseError("The driver is not registered with RMS.");
+            }
 
             Form form = new Form();
             form.add("first_name", fname);

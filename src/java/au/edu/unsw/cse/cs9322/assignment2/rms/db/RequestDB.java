@@ -225,6 +225,7 @@ public class RequestDB {
     public static void checkInit() {
         PaymentDB.checkInit();
         CheckResultDB.checkInit();
+        DriverDB.checkInit();
     }
     private final static DB instance;
 

@@ -1,10 +1,13 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.rest.payment;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.Driver;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.Payment;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestStatus;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.PaymentDB;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.RequestDB;
 import au.edu.unsw.cse.cs9322.assignment2.rms.rest.RMSService;
+import com.sun.jersey.api.client.ClientResponse;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -86,8 +89,22 @@ public class RMSPayment extends RMSService {
         payment.setCardNumber(card);
 
         try {
+
+            RequestItem req = RequestDB.get(payment.getId());
+            String regoKey = Driver.genKey(
+                    req.getLastName(),
+                    req.getFirstName(),
+                    req.getRegoNumber());
+
+            getRequestBuilder(
+                    service.path("rego").path(regoKey))
+                    .accept(MediaType.APPLICATION_XML)
+                    .put();
+
             RequestDB.updateStatus(payment.getId(), RequestStatus.ARCHIVED);
+
             return Response.ok().build();
+
         } catch (RequestDB.RequestDBException ex) {
             payment.setPaidDate(bdate);
             payment.setCardNumber(bcard);

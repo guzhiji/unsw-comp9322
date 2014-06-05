@@ -1,6 +1,7 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp;
 
 import au.edu.unsw.cse.cs9322.assignment2.rms.apps.RMSAppResource;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.Driver;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.DBBackupService;
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserIdDB;
 import javax.servlet.http.HttpServletRequest;
@@ -24,14 +25,7 @@ abstract class DriverAppResource extends RMSAppResource {
             if (regoNumber == null || regoNumber.isEmpty())
                 throw new UserIdDB.UserIdDBException("rego number is missing");
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(lastName.replace("_", ""));
-            sb.append("_");
-            sb.append(firstName.replace("_", ""));
-            sb.append("_");
-            sb.append(regoNumber.replace("_", ""));
-
-            return sb.toString();
+            return Driver.genKey(lastName, firstName, regoNumber);
 
         }
 

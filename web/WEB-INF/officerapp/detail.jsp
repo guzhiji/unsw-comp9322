@@ -48,6 +48,32 @@
         <h4>Address</h4>
         <p>${requestDetail.address}</p>
     </li>
+    <!-- Rego Detail -->
+    <li data-role="list-divider">Rego Detail</li>
+    <li data-role="fieldcontain">
+        <h4>Last Rego Date</h4>
+        <p>${regoDetail.lastRegoDate}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>First Name</h4>
+        <p>${regoDetail.firstName}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>Last Name</h4>
+        <p>${regoDetail.lastName}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>Rego Number</h4>
+        <p>${regoDetail.regoNumber}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>Licence Number</h4>
+        <p>${regoDetail.licenceNumber}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>Address</h4>
+        <p>${regoDetail.address}</p>
+    </li>
     <!-- Green Pink Slips -->
     <c:if test="${requestDetail.status ne 'NEW'}">
         <li data-role="list-divider">Green &amp; Pink Slip</li>

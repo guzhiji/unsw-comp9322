@@ -2,6 +2,7 @@ package au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp;
 
 import au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp.greenslip.GreenSlipChecker;
 import au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp.pinkslip.PinkSlipChecker;
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.Driver;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.Payment;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.SoapCheckerMessage;
@@ -58,33 +59,61 @@ public class RenewalRequest extends OfficerAppResource {
 
     }
 
+    private RequestItem getRequestItem(String requestID) {
+
+        try {
+            return getRequestBuilder(
+                    service.path("request").path("renew").path(requestID))
+                    .accept(MediaType.APPLICATION_XML)
+                    .get(RequestItem.class);
+        } catch (UniformInterfaceException ex) {
+            raiseError("request " + requestID + " is not found");
+            return null;
+        }
+
+    }
+
+    private Driver getDriver(RequestItem r) {
+
+        try {
+
+            String regoKey = Driver.genKey(
+                    r.getLastName(),
+                    r.getFirstName(),
+                    r.getRegoNumber());
+            return getRequestBuilder(
+                    service.path("rego").path(regoKey))
+                    .accept(MediaType.APPLICATION_XML)
+                    .get(Driver.class);
+
+        } catch (Exception ex) {
+            raiseError("driver is not found");
+            return null;
+        }
+
+    }
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     public void display() throws IOException, ServletException {
-        try {
 
-            RequestItem r = getRequestBuilder(
-                    service.path("request").path("renew").path(id))
-                    .accept(MediaType.APPLICATION_XML)
-                    .get(RequestItem.class);
-            httpRequest.setAttribute("requestDetail", r);
-            render("detail.jsp");
+        RequestItem r = getRequestItem(id);
+        Driver d = getDriver(r);
+        httpRequest.setAttribute("requestDetail", r);
+        httpRequest.setAttribute("regoDetail", d);
+        render("detail.jsp");
 
-        } catch (Exception ex) {
-            raiseError(ex);
-        }
     }
 
     @GET
     @Path("payment")
     @Produces(MediaType.TEXT_HTML)
     public void getPayment() {
+
+        RequestItem r = getRequestItem(id);
+
         try {
 
-            RequestItem r = getRequestBuilder(
-                    service.path("request").path("renew").path(id))
-                    .accept(MediaType.APPLICATION_XML)
-                    .get(RequestItem.class);
             Payment p = getRequestBuilder(
                     service.path("payment").path("renew").path(r.getPaymentId()))
                     .accept(MediaType.APPLICATION_XML)
@@ -108,8 +137,10 @@ public class RenewalRequest extends OfficerAppResource {
                     service.path("request").path("renew").path(id).path("review"))
                     .accept(MediaType.APPLICATION_XML)
                     .put(ClientResponse.class);
+
             if (r.getStatus() != 200)
                 raiseError("Status was not successfully changed to UNDER-REVIEW." + r.getEntity(String.class));
+
             httpResponse.sendRedirect(getPathFromApp("request/renew/" + id));
 
         } catch (UniformInterfaceException ex) {
@@ -233,13 +264,8 @@ public class RenewalRequest extends OfficerAppResource {
     public void check() throws ServletException, IOException {
 
         SoapCheckerMessage msg = null;
-
+        RequestItem req = getRequestItem(id);
         try {
-
-            RequestItem req = getRequestBuilder(
-                    service.path("request").path("renew").path(id))
-                    .accept(MediaType.APPLICATION_XML)
-                    .get(RequestItem.class);
 
             msg = new SoapCheckerMessage();
             msg.setId(id);

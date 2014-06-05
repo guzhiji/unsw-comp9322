@@ -159,8 +159,8 @@ public class RenewalRequest extends RMSService {
         checkAppPermission("remove");
 
         RequestStatus s = renewalReq.getStatus();
-        if (s != RequestStatus.NEW
-                && s != RequestStatus.ARCHIVED)
+        if (s != RequestStatus.NEW)
+            //&& s != RequestStatus.ARCHIVED)
             raiseError(401, "The request isn't allowed to be removed when being watched by officers.");
 
         try {

@@ -1,5 +1,6 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp;
 
+import au.edu.unsw.cse.cs9322.assignment2.rms.data.Driver;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.Payment;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
 import com.sun.jersey.api.client.ClientHandlerException;
@@ -63,6 +64,26 @@ public class MyRequest extends DriverAppResource {
         }
     }
 
+    private Driver getDriver(RequestItem r) {
+
+        try {
+
+            String regoKey = Driver.genKey(
+                    r.getLastName(),
+                    r.getFirstName(),
+                    r.getRegoNumber());
+            return getRequestBuilder(
+                    service.path("rego").path(regoKey))
+                    .accept(MediaType.APPLICATION_XML)
+                    .get(Driver.class);
+
+        } catch (Exception ex) {
+            raiseError("driver is not found");
+            return null;
+        }
+
+    }
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response showStatus()
@@ -71,6 +92,10 @@ public class MyRequest extends DriverAppResource {
         fetchRequestObject();
         httpRequest.setAttribute("myRequest", requestItem);
         httpRequest.setAttribute("requestBase", getPath(MyRequest.class, null));
+
+        Driver d = getDriver(requestItem);
+        httpRequest.setAttribute("myRego", d);
+
         render("status.jsp");
         return Response.ok().build();
 

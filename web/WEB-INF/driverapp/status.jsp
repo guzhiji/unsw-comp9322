@@ -29,7 +29,7 @@
         </c:if>
     </c:if>
     <!-- Request Detail -->
-    <li data-role="list-divider">Your Renewal Request</li>
+    <li data-role="list-divider">My Renewal Request</li>
     <li data-role="fieldcontain">
         <h4>Id</h4>
         <p>${myRequest.id}</p>
@@ -63,6 +63,32 @@
             </div>
         </li>
     </c:if>
+    <!-- Rego Detail -->
+    <li data-role="list-divider">My Rego Detail</li>
+    <li data-role="fieldcontain">
+        <h4>Last Rego Date</h4>
+        <p>${myRego.lastRegoDate}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>First Name</h4>
+        <p>${myRego.firstName}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>Last Name</h4>
+        <p>${myRego.lastName}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>Rego Number</h4>
+        <p>${myRego.regoNumber}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>Licence Number</h4>
+        <p>${myRego.licenceNumber}</p>
+    </li>
+    <li data-role="fieldcontain">
+        <h4>Address</h4>
+        <p>${myRego.address}</p>
+    </li>
     <!-- Payment Info -->
     <c:if test="${myRequest.status eq 'ACCEPTED'}">
         <li data-role="list-divider">Payment</li>

@@ -1,6 +1,10 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.rest;
 
 import au.edu.unsw.cse.cs9322.assignment2.rms.db.DBBackupService;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +25,9 @@ public abstract class RMSService {
     protected HttpServletResponse httpResponse;
     protected UriInfo uriInfo;
 
+    protected WebResource service;
+    protected String appKey;
+
     /**
      * app => allowed operations
      */
@@ -35,28 +42,38 @@ public abstract class RMSService {
         httpResponse = resp;
         uriInfo = uri;
 
-        if (permissions == null) {
+        // load config for service as app
+        ResourceBundle res = ResourceBundle.getBundle(
+                RMSService.class.getPackage().getName()
+                + ".config");
 
-            Map<String, Set<String>> p = new HashMap<String, Set<String>>();
-            ResourceBundle res = ResourceBundle.getBundle(
-                    getClass().getPackage().getName()
-                    + ".permissions");
+        ClientConfig config = new DefaultClientConfig();
+        Client client = Client.create(config);
+        service = client.resource(res.getString("service_uri"));
+        appKey = res.getString("app_key");
 
-            Enumeration<String> e = res.getKeys();
-            while (e.hasMoreElements()) {
-                String app = e.nextElement();
-                Set<String> allowed = new HashSet<String>();
-                for (String op : res.getString(app).split(" "))
-                    if (!op.isEmpty())
-                        allowed.add(op);
-                p.put(app, allowed);
-            }
+        // load app permissions on the service
+        permissions = new HashMap<String, Set<String>>();
+        res = ResourceBundle.getBundle(
+                getClass().getPackage().getName()
+                + ".permissions");
 
-            permissions = p;
-
+        Enumeration<String> e = res.getKeys();
+        while (e.hasMoreElements()) {
+            String app = e.nextElement();
+            Set<String> allowed = new HashSet<String>();
+            for (String op : res.getString(app).split(" "))
+                if (!op.isEmpty())
+                    allowed.add(op);
+            permissions.put(app, allowed);
         }
 
+        // trigger DB backup service
         DBBackupService.checkStarted(httpRequest.getServletContext().getRealPath("/WEB-INF/data"));
+    }
+
+    protected WebResource.Builder getRequestBuilder(WebResource res) {
+        return res.header("app_key", appKey);
     }
 
     protected void checkAppPermission(String op) {
