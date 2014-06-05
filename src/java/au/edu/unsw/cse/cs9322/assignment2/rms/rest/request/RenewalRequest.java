@@ -21,16 +21,22 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 
 /**
- * GET /RMS/rest/request/renew/[id] PUT /RMS/rest/request/renew/[id] DELETE
- * /RMS/rest/request/renew/[id] PUT /RMS/rest/request/renew/[id]/accept PUT
- * /RMS/rest/request/renew/[id]/reject PUT /RMS/rest/request/renew/[id]/review
+ * represents a single identified request.
  *
- * URL pattern: /rest/request/renew/...
+ * <pre>
+ * GET /RMS/rest/request/renew/[id]             read
+ * PUT /RMS/rest/request/renew/[id]             update
+ * DELETE /RMS/rest/request/renew/[id]          remove
+ * PUT /RMS/rest/request/renew/[id]/checkresult set check result id
+ * PUT /RMS/rest/request/renew/[id]/accept      accept & set payment id
+ * PUT /RMS/rest/request/renew/[id]/reject      reject
+ * PUT /RMS/rest/request/renew/[id]/review      review
+ * </pre>
  */
 @Path("/request/renew/{id}")
 public class RenewalRequest extends RMSService {
 
-    RequestItem renewalReq;
+    private RequestItem renewalReq;
 
     public RenewalRequest(
             @Context HttpServletRequest req,
@@ -40,11 +46,12 @@ public class RenewalRequest extends RMSService {
 
         super(req, resp, uri);
 
-        //checkAppPermission("get");
+        checkAppPermission("get");
+
         try {
             renewalReq = RequestDB.get(id);
         } catch (RequestDB.RequestDBException e) {
-            raiseError(404, e.getMessage() + ":" + id);
+            raiseError(404, e.getMessage() + "[" + id + "]");
         }
 
     }
@@ -79,8 +86,9 @@ public class RenewalRequest extends RMSService {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     public Response update(JAXBElement<RequestItem> req) {
-        System.out.println(req.toString());
-        //checkAppPermission("update");
+
+        checkAppPermission("update");
+
         if (renewalReq.getStatus() != RequestStatus.NEW)
             raiseError(401, "No modification can be made after an officer started reviewing the request.");
 
@@ -112,20 +120,27 @@ public class RenewalRequest extends RMSService {
             @FormParam("rego_number") String rego_num,
             @FormParam("address") String address) {
 
-        //checkAppPermission("update");
+        checkAppPermission("update");
+
+        if (renewalReq.getStatus() != RequestStatus.NEW)
+            raiseError(401, "No modification can be made after an officer started reviewing the request.");
+
         renewalReq.setLastName(lname);
         renewalReq.setFirstName(fname);
         renewalReq.setLicenceNumber(license);
         renewalReq.setRegoNumber(rego_num);
         renewalReq.setAddress(address);
 
-        try {
-            RequestDB.update(renewalReq.getId(), renewalReq);
-            return Response.ok().build();
-        } catch (RequestDB.RequestDBException ex) {
-            return raiseError(400, ex.getMessage());
-        }
+        return Response.ok().build();
 
+        /*
+         try {
+         RequestDB.update(renewalReq.getId(), renewalReq);
+         return Response.ok().build();
+         } catch (RequestDB.RequestDBException ex) {
+         return raiseError(400, ex.getMessage());
+         }
+         */
     }
 
     /**
@@ -138,14 +153,16 @@ public class RenewalRequest extends RMSService {
      * @return
      */
     @DELETE
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_XML)
     public Response remove() {
 
-        //checkAppPermission("remove");
+        checkAppPermission("remove");
+
         RequestStatus s = renewalReq.getStatus();
         if (s != RequestStatus.NEW
                 && s != RequestStatus.ARCHIVED)
-            raiseError(401, "The request isn't allowed being removed when being watched.");
+            raiseError(401, "The request isn't allowed to be removed when being watched by officers.");
+
         try {
             RequestDB.remove(renewalReq.getId());
             return Response.ok().build();
@@ -154,28 +171,44 @@ public class RenewalRequest extends RMSService {
         }
     }
 
+    /**
+     * set check result id that points to a check result provided by the check
+     * result service.
+     *
+     * PUT /RMS/rest/request/renew/[id]/checkresult
+     *
+     * @param crid
+     * @return
+     */
     @PUT
     @Path("checkresult")
     @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response updateCheckResult(
+    public Response setCheckResult(
             @FormParam("crid") String crid) {
 
-        //checkAppPermission("updateCheckResult");
-        renewalReq.setAutoCheckResultId(crid);
+        checkAppPermission("setCheckResult");
 
-        try {
-            RequestDB.update(renewalReq.getId(), renewalReq);
-            return Response.ok().build();
-        } catch (RequestDB.RequestDBException ex) {
-            return raiseError(400, ex.getMessage());
-        }
+        renewalReq.setAutoCheckResultId(crid);
+        return Response.ok().build();
+
+        /*
+         try {
+         RequestDB.update(renewalReq.getId(), renewalReq);
+         return Response.ok().build();
+         } catch (RequestDB.RequestDBException ex) {
+         return raiseError(400, ex.getMessage());
+         }
+         */
     }
 
     /**
+     * set payment id that points to a payment provided by the payment service;
+     * set status of the current request to ACCEPTED.
      *
      * URL pattern: /rest/request/renew/[id]/accept
      *
+     * @param pid
      * @return
      */
     @PUT
@@ -185,15 +218,16 @@ public class RenewalRequest extends RMSService {
     public Response accept(
             @FormParam("payment_id") String pid) {
 
-        //checkAppPermission("accept");
+        checkAppPermission("accept");
+
+        String p = renewalReq.getPaymentId();
         renewalReq.setPaymentId(pid);
+
         try {
             RequestDB.updateStatus(renewalReq.getId(), RequestStatus.ACCEPTED);
-//            PaymentDB.create(renewalReq.getId(), amount);
-
             return Response.ok().build();
-
         } catch (RequestDB.RequestDBException ex) {
+            renewalReq.setPaymentId(p);
             return raiseError(400, ex.getMessage());
         }
 
@@ -213,16 +247,18 @@ public class RenewalRequest extends RMSService {
     public Response reject(
             @FormParam("reason") String reason) {
 
-        //checkAppPermission("reject");
+        checkAppPermission("reject");
+
         if (reason == null || reason.isEmpty())
             raiseError(400, "please provide a reason");
+        String breason = renewalReq.getRejectReason();
+        renewalReq.setRejectReason(reason);
+
         try {
-            renewalReq.setRejectReason(reason);
             RequestDB.updateStatus(renewalReq.getId(), RequestStatus.ARCHIVED);
-
             return Response.ok().build();
-
         } catch (RequestDB.RequestDBException ex) {
+            renewalReq.setRejectReason(breason);
             return raiseError(400, ex.getMessage());
         }
 
@@ -239,12 +275,12 @@ public class RenewalRequest extends RMSService {
     @Produces(MediaType.APPLICATION_XML)
     public Response review() {
 
-        //checkAppPermission("review");
+        checkAppPermission("review");
+
         try {
 
             RequestDB.updateStatus(renewalReq.getId(), RequestStatus.UNDER_REVIEW);
-
-            return Response.ok(renewalReq).build();
+            return Response.ok().build();
 
         } catch (RequestDB.RequestDBException ex) {
             return raiseError(400, ex.getMessage());

@@ -72,12 +72,20 @@ public abstract class RMSService {
         }
     }
 
-    protected Response raiseError(int status, String msg) throws WebApplicationException {
+    protected Response raiseError(int status, String msg)
+            throws WebApplicationException {
         Response r = Response.status(status)
                 .entity(msg)
                 .type(MediaType.TEXT_PLAIN)
                 .build();
         throw new WebApplicationException(r);
+    }
+
+    protected Response raiseError(int status, Throwable t)
+            throws WebApplicationException {
+
+        return raiseError(status, t.getMessage());
+
     }
 
     protected String getPath(String p) {

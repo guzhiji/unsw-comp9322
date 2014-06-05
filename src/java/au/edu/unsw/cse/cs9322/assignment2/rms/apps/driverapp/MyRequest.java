@@ -2,7 +2,9 @@ package au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp;
 
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.Payment;
 import au.edu.unsw.cse.cs9322.assignment2.rms.data.RequestItem;
+import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.representation.Form;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -19,16 +21,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-/*
- GET /RMS/apps/driver/myrequest
- GET /RMS/apps/driver/myrequest/edit
- POST /RMS/apps/driver/myrequest/edit
- POST /RMS/apps/driver/myrequest/pay
+/**
+ * <pre>
+ * GET /RMS/apps/driver/myrequest
+ * GET /RMS/apps/driver/myrequest/edit
+ * POST /RMS/apps/driver/myrequest/edit
+ * GET /RMS/apps/driver/myrequest/payment
+ * POST /RMS/apps/driver/myrequest/pay
+ * </pre>
  */
 @Path("/myrequest")
 public class MyRequest extends DriverAppResource {
 
     private final String requestID;
+    private RequestItem requestItem;
 
     public MyRequest(
             @Context HttpServletRequest req,
@@ -46,17 +52,15 @@ public class MyRequest extends DriverAppResource {
 
     }
 
-    private Response getContent(String tpl) throws ServletException, IOException {
-
-        RequestItem r = getRequestBuilder(
-                service.path("request").path("renew").path(requestID))
-                .accept(MediaType.APPLICATION_XML)
-                .get(RequestItem.class);
-
-        httpRequest.setAttribute("myRequest", r);
-        render(tpl);
-
-        return Response.ok().build();
+    private void fetchRequestObject() {
+        try {
+            requestItem = getRequestBuilder(
+                    service.path("request").path("renew").path(requestID))
+                    .accept(MediaType.APPLICATION_XML)
+                    .get(RequestItem.class);
+        } catch (UniformInterfaceException ex) {
+            raiseError("request " + requestID + " is not found");
+        }
     }
 
     @GET
@@ -64,8 +68,12 @@ public class MyRequest extends DriverAppResource {
     public Response showStatus()
             throws IOException, ServletException {
 
+        fetchRequestObject();
+        httpRequest.setAttribute("myRequest", requestItem);
         httpRequest.setAttribute("requestBase", getPath(MyRequest.class, null));
-        return getContent("status.jsp");
+        render("status.jsp");
+        return Response.ok().build();
+
     }
 
     @GET
@@ -74,8 +82,11 @@ public class MyRequest extends DriverAppResource {
     public Response showEditor()
             throws IOException, ServletException {
 
+        fetchRequestObject();
+        httpRequest.setAttribute("myRequest", requestItem);
         httpRequest.setAttribute("formAction", getPath(MyRequest.class, "edit"));
-        return getContent("edit.jsp");
+        render("edit.jsp");
+        return Response.ok().build();
 
     }
 
@@ -98,26 +109,27 @@ public class MyRequest extends DriverAppResource {
                 .type(MediaType.APPLICATION_XML)
                 .put(ClientResponse.class, req);
 
-        if (response.getStatus() == 200)
-            httpResponse.sendRedirect(getPath(MyRequest.class, null));
-        else
-            raiseError(response.getStatus() + ":" + response.getEntity(String.class), "status.jsp");
+        if (response.getStatus() != 200)
+            raiseError(response.getStatus() + ":" + response.getEntity(String.class));
+
+        httpResponse.sendRedirect(getPath(MyRequest.class, null));
 
     }
 
     @GET
     @Path("payment")
     @Produces(MediaType.TEXT_HTML)
-    public void getPayment() {
+    public void getPayment() throws ServletException, IOException {
+
+        fetchRequestObject();
+        String pid = requestItem.getPaymentId();
+        if (pid == null)
+            raiseError("You haven't received payment notification.");
+
         try {
 
-            RequestItem r = getRequestBuilder(
-                    service.path("request").path("renew").path(requestID))
-                    .accept(MediaType.APPLICATION_XML)
-                    .get(RequestItem.class);
-
             Payment p = getRequestBuilder(
-                    service.path("payment").path("renew").path(r.getPaymentId()))
+                    service.path("payment").path("renew").path(pid))
                     .accept(MediaType.APPLICATION_XML)
                     .get(Payment.class);
 
@@ -125,7 +137,7 @@ public class MyRequest extends DriverAppResource {
             httpRequest.setAttribute("payment", p);
             render("payment.jsp");
 
-        } catch (Exception ex) {
+        } catch (UniformInterfaceException ex) {
             raiseError(ex);
         }
     }
@@ -134,23 +146,35 @@ public class MyRequest extends DriverAppResource {
     @Path("pay")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response pay(
+    public void pay(
             @FormParam("card") String card) throws IOException {
+
+        fetchRequestObject();
+        String pid = requestItem.getPaymentId();
+        if (pid == null)
+            raiseError("You haven't received payment notification.");
 
         Form form = new Form();
         form.add("card", card);
 
-        ClientResponse response = getRequestBuilder(
-                service.path("payment").path("renew").path(requestID).path("pay"))
-                .accept(MediaType.APPLICATION_XML)
-                .type(MediaType.APPLICATION_FORM_URLENCODED)
-                .put(ClientResponse.class, form);
+        try {
 
-        if (response.getStatus() != 200)
-            raiseError(response.getEntity(String.class));
+            ClientResponse response = getRequestBuilder(
+                    service.path("payment").path("renew").path(pid).path("pay"))
+                    .accept(MediaType.APPLICATION_XML)
+                    .type(MediaType.APPLICATION_FORM_URLENCODED)
+                    .put(ClientResponse.class, form);
 
-        httpResponse.sendRedirect(getPath(MyRequest.class, "payment"));
-        return Response.ok().build();
+            if (response.getStatus() != 200)
+                raiseError(response.getEntity(String.class));
+
+            httpResponse.sendRedirect(getPath(MyRequest.class, "payment"));
+
+        } catch (ClientHandlerException ex) {
+            raiseError(ex);
+        } catch (UniformInterfaceException ex) {
+            raiseError(ex);
+        }
 
     }
 }

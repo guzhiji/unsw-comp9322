@@ -39,12 +39,18 @@ public class GreenSlipChecker extends AbstractSoapChecker {
                         msg.getRegoNumber());
 
                 if (m.getPaidFlag()) {
-                    msg.setGreenSlip(m);
+
                     Logger.getLogger(p).log(Level.INFO, "find a green slip from provider {0}", p);
+
+                    msg.setGreenSlip(m);
                     return msg;
+
                 } else {
-                    exceptions.add(new GreenSlipProviderException(p, "not paid for a green slip"));
+
                     Logger.getLogger(p).log(Level.INFO, "registered with green slip provider {0} but not paid", p);
+
+                    exceptions.add(new GreenSlipProviderException(p, "not paid for a green slip"));
+
                 }
 
             } catch (GreenSlipProviderException ex) {

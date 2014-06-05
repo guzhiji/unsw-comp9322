@@ -4,22 +4,31 @@
 <jsp:include page="_header.jsp" />
 
 <ul data-role="listview">
+    <!-- Status -->
     <li data-role="list-divider">Current Status</li>
     <li>
-        ${myRequest.status}
+        <h3>${myRequest.status}</h3>
     </li>
+    <c:if test="${myRequest.isRejected()}">
+        <li>
+            <h4>Rejection Reason</h4>
+            <p>${myRequest.rejectReason}</p>
+        </li>
+    </c:if>
     <c:if test="${myRequest.status ne 'UNDER_REVIEW'}">
         <c:if test="${myRequest.status ne 'ARCHIVED'}">
             <li>
-                <form method="post" id="archiveForm" action="${requestBase}/archive"></form>
-                <button form="archiveForm" 
-                        data-role="button" 
-                        data-theme="e" 
-                        data-inline="true"
-                        data-mini="true">Archive This</button>
+                <div>
+                    <form method="post" id="archiveForm" action="${requestBase}/archive"></form>
+                    <button form="archiveForm" 
+                            data-role="button" 
+                            data-theme="e" 
+                            data-mini="true">Archive This</button>
+                </div>
             </li>
         </c:if>
     </c:if>
+    <!-- Request Detail -->
     <li data-role="list-divider">Your Renewal Request</li>
     <li data-role="fieldcontain">
         <h4>Id</h4>
@@ -54,6 +63,7 @@
             </div>
         </li>
     </c:if>
+    <!-- Payment Info -->
     <c:if test="${myRequest.status eq 'ACCEPTED'}">
         <li data-role="list-divider">Payment</li>
         <li>
@@ -63,12 +73,6 @@
                    data-theme="e" 
                    data-mini="true">View</a>
             </div>
-        </li>
-    </c:if>
-    <c:if test="${myRequest.isRejected()}">
-        <li data-role="list-divider">Rejection Reason</li>
-        <li>
-            <p>${myRequest.rejectReason}</p>
         </li>
     </c:if>
 

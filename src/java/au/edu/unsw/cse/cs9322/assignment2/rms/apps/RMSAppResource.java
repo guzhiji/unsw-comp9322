@@ -41,8 +41,8 @@ public abstract class RMSAppResource {
 
         ClientConfig config = new DefaultClientConfig();
         Client client = Client.create(config);
-        service = client.resource(res.getString("service_uri"));//client.resource(service_uri);
-        appKey = res.getString("app_key");//app_key;
+        service = client.resource(res.getString("service_uri"));
+        appKey = res.getString("app_key");
 
         appName = app_name;
         httpRequest = req;

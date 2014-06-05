@@ -27,7 +27,7 @@ public class CheckResultDB {
     private static class DB implements DBBackupService.AutoBackupCapableDB {
 
         private final ConcurrentHashMap<String, SoapCheckerMessage> storage = new ConcurrentHashMap<String, SoapCheckerMessage>();
-        private boolean modified = false;
+        volatile private boolean modified = false;
 
         synchronized void create(SoapCheckerMessage msg) throws CheckResultDBException {
             if (storage.containsKey(msg.getId())) {

@@ -21,13 +21,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
+ * <pre>
  * GET /RMS/rest/payment/renew/[id]
  * PUT /RMS/rest/payment/renew/[id]/pay
-*/
+ * </pre>
+ */
 @Path("/payment/renew/{id}")
 public class RMSPayment extends RMSService {
 
-    Payment payment;
+    private Payment payment;
 
     public RMSPayment(
             @Context HttpServletRequest req,
@@ -36,7 +38,8 @@ public class RMSPayment extends RMSService {
             @PathParam("id") String id) {
         super(req, resp, uri);
 
-        //checkAppPermission("get");
+        checkAppPermission("get");
+
         try {
             payment = PaymentDB.get(id);
         } catch (PaymentDB.PaymentDBException ex) {
@@ -75,14 +78,19 @@ public class RMSPayment extends RMSService {
     public Response pay(
             @FormParam("card") String card) {
 
-        //checkAppPermission("pay");
-        try {
-            payment.setPaidDate(new Date());
-            payment.setCardNumber(card);
-            RequestDB.updateStatus(payment.getId(), RequestStatus.ARCHIVED);
+        checkAppPermission("pay");
 
+        Date bdate = payment.getPaidDate();
+        String bcard = payment.getCardNumber();
+        payment.setPaidDate(new Date());
+        payment.setCardNumber(card);
+
+        try {
+            RequestDB.updateStatus(payment.getId(), RequestStatus.ARCHIVED);
             return Response.ok().build();
         } catch (RequestDB.RequestDBException ex) {
+            payment.setPaidDate(bdate);
+            payment.setCardNumber(bcard);
             return raiseError(400, ex.getMessage());
         }
 

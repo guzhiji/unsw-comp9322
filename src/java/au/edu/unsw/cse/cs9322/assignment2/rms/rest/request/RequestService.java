@@ -23,12 +23,8 @@ import javax.xml.bind.JAXBElement;
  * root of the request service.
  *
  * <pre>
- * POST /RMS/rest/request/renew
- * GET /RMS/rest/request/list
- *
- * URL pattern: /rest/request/...
- * - list:          list requests
- * - renew/[id]:    get the request of type 'renew' and id [id]
+ * POST /RMS/rest/request/renew     send a renewal request
+ * GET /RMS/rest/request/list       list requests
  * </pre>
  */
 @Path("/request")
@@ -66,13 +62,14 @@ public class RequestService extends RMSService {
             @FormParam("rego_number") String rego_num,
             @FormParam("address") String address) {
 
-        //checkAppPermission("create");
+        checkAppPermission("create");
+
         RequestItem r = new RequestItem(
                 lname, fname, license, rego_num, address);
         RequestDB.add(r);
 
         URI uri = uriInfo.getBaseUriBuilder()
-                .path(RenewalRequest.class) // TODO url will be adjusted
+                .path(RenewalRequest.class)
                 .build(r.getId());
 
         return Response.created(uri).build();
@@ -85,12 +82,13 @@ public class RequestService extends RMSService {
     @Consumes(MediaType.APPLICATION_XML)
     public Response create(JAXBElement<RequestItem> req) {
 
-        //checkAppPermission("create");
+        checkAppPermission("create");
+
         RequestItem r = req.getValue();
         RequestDB.add(r);
 
         URI uri = uriInfo.getBaseUriBuilder()
-                .path(RenewalRequest.class)// TODO url will be adjusted
+                .path(RenewalRequest.class)
                 .build(r.getId());
 
         return Response.created(uri).build();
@@ -107,7 +105,9 @@ public class RequestService extends RMSService {
     @Path("list")
     @Produces(MediaType.APPLICATION_XML)
     public RequestList getList() {
-        //checkAppPermission("list");
+
+        checkAppPermission("list");
+
         return RequestDB.getList();
     }
 

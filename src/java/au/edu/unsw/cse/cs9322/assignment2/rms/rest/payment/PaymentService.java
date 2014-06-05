@@ -16,7 +16,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
+ * <pre>
  * POST /RMS/rest/payment/create
+ * </pre>
  */
 @Path("/payment")
 public class PaymentService extends RMSService {
@@ -48,9 +50,11 @@ public class PaymentService extends RMSService {
             @FormParam("request") String rid,
             @FormParam("amount") String amount) {
 
-        //checkAppPermission("create");
+        checkAppPermission("create");
+
         if (rid == null || rid.isEmpty())
             return raiseError(400, "Request id is not provided.");
+
         float fee;
         try {
             fee = Float.parseFloat(amount);

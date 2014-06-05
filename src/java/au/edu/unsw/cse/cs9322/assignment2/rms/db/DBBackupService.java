@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DBBackupService {
 
@@ -28,10 +30,18 @@ public class DBBackupService {
 
             @Override
             public void run() {
+
+                Logger.getLogger(getClass().getSimpleName())
+                        .log(Level.INFO, "DB backup task begins");
+
                 synchronized (databases) {
                     for (AutoBackupCapableDB db : databases)
                         db.backUp(basePath);
                 }
+
+                Logger.getLogger(getClass().getSimpleName())
+                        .log(Level.INFO, "DB backup task finishes");
+
             }
         }, 1, 10, TimeUnit.SECONDS);
     }
@@ -49,5 +59,7 @@ public class DBBackupService {
     public static void shutdown() {
         if (service != null)
             service.executor.shutdown();
+        Logger.getLogger(DBBackupService.class.getSimpleName())
+                .log(Level.INFO, "DBBackupService is shutting down");
     }
 }

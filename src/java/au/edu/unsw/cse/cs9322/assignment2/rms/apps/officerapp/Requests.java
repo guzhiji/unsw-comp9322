@@ -20,9 +20,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
-/*
- GET /RMS/apps/officer/request/list
- GET /RMS/apps/officer/request/list/[status]
+/**
+ * <pre>
+ * GET /RMS/apps/officer/request/list
+ * GET /RMS/apps/officer/request/list/[status]
+ * </pre>
  */
 @Path("/request")
 public class Requests extends OfficerAppResource {
@@ -35,6 +37,7 @@ public class Requests extends OfficerAppResource {
 
         if (getUserId() == null)
             raiseError("not authenticated");
+
         httpRequest.setAttribute("homePage", getPathFromApp("request/list/NEW"));
     }
 
@@ -42,7 +45,6 @@ public class Requests extends OfficerAppResource {
     @Path("list")
     @Produces(MediaType.TEXT_HTML)
     public void showRequests() throws IOException, ServletException {
-//        showRequests("NEW");
         httpResponse.sendRedirect(getPathFromApp("request/list/NEW"));
     }
 
@@ -77,7 +79,6 @@ public class Requests extends OfficerAppResource {
                 service.path("request").path("list"))
                 .accept(MediaType.APPLICATION_XML)
                 .get(RequestList.class);
-        //RequestList list=RequestDB.getQueueList();//for debug
         for (RequestItem r : list) {
             if (r.getStatus() != reqStatus)
                 toRemove.add(r);

@@ -15,12 +15,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
-/*
-GET /RMS/apps/officer/
-GET /RMS/apps/officer/login
-POST /RMS/apps/officer/login
-POST /RMS/apps/officer/logout
-*/
+/**
+ * <pre>
+ * GET /RMS/apps/officer/
+ * GET /RMS/apps/officer/login
+ * POST /RMS/apps/officer/login
+ * POST /RMS/apps/officer/logout
+ * </pre>
+ */
 @Path("/")
 public class OfficerHome extends OfficerAppResource {
 
@@ -54,7 +56,7 @@ public class OfficerHome extends OfficerAppResource {
             @FormParam("password") String password)
             throws IOException, ServletException {
 
-        String id = USER_DB.getUserId(username, password);
+        String id = USER_ID_DB.getUserId(username, password);
 
         if (id != null) {
             setUserId(id);

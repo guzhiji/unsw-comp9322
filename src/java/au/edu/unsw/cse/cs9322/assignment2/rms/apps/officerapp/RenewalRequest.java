@@ -9,8 +9,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.representation.Form;
 import java.io.IOException;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,13 +22,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
-/*
- GET /RMS/apps/officer/request/renew/[id]
- POST /RMS/apps/officer/request/renew/[id]/review
- POST /RMS/apps/officer/request/renew/[id]/accept
- POST /RMS/apps/officer/request/renew/[id]/reject
- GET /RMS/apps/officer/request/renew/[id]/check
- POST /RMS/apps/officer/request/renew/[id]/check/invoke
+/**
+ * <pre>
+ * GET /RMS/apps/officer/request/renew/[id]
+ * GET /RMS/apps/officer/request/renew/[id]/payment
+ * POST /RMS/apps/officer/request/renew/[id]/review
+ * GET /RMS/apps/officer/request/renew/[id]/accept
+ * POST /RMS/apps/officer/request/renew/[id]/accept
+ * GET /RMS/apps/officer/request/renew/[id]/reject
+ * POST /RMS/apps/officer/request/renew/[id]/reject
+ * GET /RMS/apps/officer/request/renew/[id]/check
+ * POST /RMS/apps/officer/request/renew/[id]/check/invoke
+ * </pre>
  */
 @Path("/request/renew/{id}")
 public class RenewalRequest extends OfficerAppResource {

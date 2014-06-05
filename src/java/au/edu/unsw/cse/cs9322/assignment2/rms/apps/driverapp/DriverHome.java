@@ -1,7 +1,7 @@
 package au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp;
 
-import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserDB;
-import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserDB.UserDBException;
+import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserIdDB;
+import au.edu.unsw.cse.cs9322.assignment2.rms.db.UserIdDB.UserIdDBException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.representation.Form;
 import java.io.IOException;
@@ -20,14 +20,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
-/*
- GET /RMS/apps/driver/
- GET /RMS/apps/driver/login
- GET /RMS/apps/driver/login/[id]
- POST /RMS/apps/driver/login
- POST /RMS/apps/driver/logout
- GET /RMS/apps/driver/request
- POST /RMS/apps/driver/request
+/**
+ * <pre>
+ * GET /RMS/apps/driver/
+ * GET /RMS/apps/driver/login
+ * GET /RMS/apps/driver/login/[id]
+ * POST /RMS/apps/driver/login
+ * POST /RMS/apps/driver/logout
+ * GET /RMS/apps/driver/request
+ * POST /RMS/apps/driver/request
+ * </pre>
  */
 @Path("/")
 public class DriverHome extends DriverAppResource {
@@ -50,18 +52,22 @@ public class DriverHome extends DriverAppResource {
     @GET
     @Path("login")
     @Produces(MediaType.TEXT_HTML)
-    public void showLogin() throws IOException, ServletException {
+    public void showLoginForm() throws IOException, ServletException {
         show();
     }
 
     @GET
     @Path("login/{id}")
     @Produces(MediaType.TEXT_HTML)
-    public void login(@PathParam("id") String id) throws IOException, ServletException {
+    public void login(@PathParam("id") String id)
+            throws IOException, ServletException {
+
+        // validate id
         ClientResponse r = getRequestBuilder(
                 service.path("request").path("renew").path(id))
                 .accept(MediaType.APPLICATION_XML)
                 .get(ClientResponse.class);
+
         if (r.getStatus() == 200) {
             setUserId(id);
             httpResponse.sendRedirect(getPathFromApp("myrequest"));
@@ -69,6 +75,7 @@ public class DriverHome extends DriverAppResource {
             setUserId(null);
             httpResponse.sendRedirect(getPathFromApp("login"));
         }
+
     }
 
     @POST
@@ -82,8 +89,11 @@ public class DriverHome extends DriverAppResource {
             @FormParam("password") String password)
             throws IOException, ServletException {
 
+        httpRequest.setAttribute("formAction", getPathFromApp("login"));
+        httpRequest.setAttribute("requestForm", getPathFromApp("request"));
+
         try {
-            String id = USER_DB.getUserId(genKey(fname, lname, rego_num), password);
+            String id = USER_ID_DB.getUserId(fname, lname, rego_num, password);
 
             if (id != null) {
                 setUserId(id);
@@ -91,9 +101,7 @@ public class DriverHome extends DriverAppResource {
             } else {
                 raiseError("Password may be wrong for the user.", "login.jsp");
             }
-        } catch (UserDB.UserDBException ex) {
-            httpRequest.setAttribute("formAction", getPathFromApp("login"));
-            httpRequest.setAttribute("requestForm", getPathFromApp("request"));
+        } catch (UserIdDB.UserIdDBException ex) {
             raiseError(ex, "login.jsp");
         }
 
@@ -104,8 +112,10 @@ public class DriverHome extends DriverAppResource {
     public void logout() throws IOException {
 
         HttpSession sess = httpRequest.getSession(false);
-        if (sess != null)
+        if (sess != null) {
+            setUserId(null);
             sess.invalidate();
+        }
         httpResponse.sendRedirect(getPathFromApp(null));
 
     }
@@ -141,8 +151,7 @@ public class DriverHome extends DriverAppResource {
 
         try {
 
-            String key = genKey(fname, lname, rego_num);
-            USER_DB.checkUserInfo(key, password);
+            USER_ID_DB.checkUserInfo(fname, lname, rego_num, password);
 
             Form form = new Form();
             form.add("first_name", fname);
@@ -156,19 +165,19 @@ public class DriverHome extends DriverAppResource {
                     .type(MediaType.APPLICATION_FORM_URLENCODED)
                     .post(ClientResponse.class, form);
 
-            // Return code should be 201 == created resource
             if (response.getStatus() == 201) {
 
                 String id = response.getLocation().getPath();
                 id = id.substring(id.lastIndexOf('/', id.length() - 2) + 1);
 
-                USER_DB.register(key, password, id);
+                USER_ID_DB.register(fname, lname, rego_num, password, id);
                 setUserId(id);
                 httpResponse.sendRedirect(getPathFromApp("myrequest"));
+
             } else
                 raiseError("service error:" + response.getStatus());
 
-        } catch (UserDBException dbex) {
+        } catch (UserIdDBException dbex) {
             httpRequest.setAttribute("homePage", getPathFromApp(null));
             raiseError(dbex, "form.jsp");
         }

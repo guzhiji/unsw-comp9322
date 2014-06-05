@@ -34,7 +34,7 @@ public class RequestDB {
 
         final ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<String>();
         final ConcurrentHashMap<String, RequestItem> storage = new ConcurrentHashMap<String, RequestItem>();
-        boolean modified = false;
+        volatile boolean modified = false;
 
         String genKey() {
             String k;

@@ -4,21 +4,30 @@
 <jsp:include page="_header.jsp" />
 
 <ul data-role="listview">
+    <!-- Status -->
     <li data-role="list-divider">Request Current Status</li>
-    <li data-role="fieldcontain">
-        <div>
-            ${requestDetail.status}
-            <c:if test="${requestDetail.status eq 'NEW'}">
+    <li>
+        <h3>${requestDetail.status}</h3>
+    </li>
+    <c:if test="${requestDetail.isRejected()}">
+        <li>
+            <h4>Rejection Reason</h4>
+            <p>${requestDetail.rejectReason}</p>
+        </li>
+    </c:if>
+    <c:if test="${requestDetail.status eq 'NEW'}">
+        <li>
+            <div>
                 <form method="post" id="reviewForm" action="${formActionBase}/review" data-ajax="false"></form>
                 <button form="reviewForm" 
                         data-role="button" 
                         data-theme="e" 
-                        data-inline="true"
                         data-mini="true">Review This</button>
-            </c:if>
-        </div>
-    </li>
-    <li data-role="list-divider">Renewal Requester</li>
+            </div>
+        </li>
+    </c:if>
+    <!-- Request Detail -->
+    <li data-role="list-divider">Renewal Request Detail</li>
     <li data-role="fieldcontain">
         <h4>First Name</h4>
         <p>${requestDetail.firstName}</p>
@@ -39,6 +48,7 @@
         <h4>Address</h4>
         <p>${requestDetail.address}</p>
     </li>
+    <!-- Green Pink Slips -->
     <c:if test="${requestDetail.status ne 'NEW'}">
         <li data-role="list-divider">Green &amp; Pink Slip</li>
         <li>
@@ -62,6 +72,7 @@
             </div>
         </li>
     </c:if>
+    <!-- Payment Info -->
     <c:if test="${requestDetail.status eq 'ACCEPTED'}">
         <li data-role="list-divider">Payment</li>
         <li>
@@ -71,12 +82,6 @@
                    data-theme="e" 
                    data-mini="true">View</a>
             </div>
-        </li>
-    </c:if>
-    <c:if test="${requestDetail.isRejected()}">
-        <li data-role="list-divider">Rejection Reason</li>
-        <li>
-            <p>${requestDetail.rejectReason}</p>
         </li>
     </c:if>
 </ul>

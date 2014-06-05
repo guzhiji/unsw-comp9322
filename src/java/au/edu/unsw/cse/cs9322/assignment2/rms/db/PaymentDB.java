@@ -27,7 +27,7 @@ public class PaymentDB {
     private static class DB implements DBBackupService.AutoBackupCapableDB {
 
         private final ConcurrentHashMap<String, Payment> storage = new ConcurrentHashMap<String, Payment>();
-        boolean modified = false;
+        volatile boolean modified = false;
 
         synchronized Payment create(String id, float fee) throws PaymentDBException {
             if (storage.containsKey(id)) {

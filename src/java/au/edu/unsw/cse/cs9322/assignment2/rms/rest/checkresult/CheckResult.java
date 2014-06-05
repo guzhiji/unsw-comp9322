@@ -35,24 +35,14 @@ public class CheckResult extends RMSService {
         super(req, resp, uri);
     }
 
-    /**
-     * A new payment resource for the renewal fee is created by HTTP POST -
-     * initiated by RMS Registration Officer Application. When a renewal request
-     * is accepted by the officer, the RMS Registration Officer Application
-     * sends HTTP POST to the relevant RESTful service. In this request, the
-     * officer should indicate how much the renewal fee is). The response of
-     * this HTTP POST must contain a URI of the new payment and its location.
-     *
-     * @param result
-     * @return
-     */
     @POST
     @Path("save")
     @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_XML)
     public Response save(JAXBElement<SoapCheckerMessage> result) {
 
-        //checkAppPermission("save");
+        checkAppPermission("save");
+
         try {
             SoapCheckerMessage msg = result.getValue();
             CheckResultDB.create(msg);
@@ -66,7 +56,6 @@ public class CheckResult extends RMSService {
             return Response.created(uri).build();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
             return raiseError(400, ex.getMessage());
         }
 
@@ -77,7 +66,8 @@ public class CheckResult extends RMSService {
     @Produces(MediaType.APPLICATION_XML)
     public SoapCheckerMessage get(@PathParam("id") String id) {
 
-        //checkAppPermission("get");
+        checkAppPermission("get");
+
         try {
             return CheckResultDB.get(id);
         } catch (CheckResultDBException ex) {
