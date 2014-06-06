@@ -4,20 +4,6 @@
     <listener>
         <listener-class>au.edu.unsw.cse.cs9322.assignment2.rms.db.DBBackupServletHook</listener-class>
     </listener>
-    <!--                         RMS REST Service                            -->
-    <servlet>
-        <servlet-name>RMS REST Service</servlet-name>
-        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms.rest</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>RMS REST Service</servlet-name>
-        <url-pattern>/rest/*</url-pattern>
-    </servlet-mapping>
     <!--                         RMS Driver App                            -->
     <servlet>
         <servlet-name>RMS Driver App</servlet-name>
@@ -31,20 +17,6 @@
     <servlet-mapping>
         <servlet-name>RMS Driver App</servlet-name>
         <url-pattern>/apps/driver/*</url-pattern>
-    </servlet-mapping>
-    <!--                         RMS Officer App                            -->
-    <servlet>
-        <servlet-name>RMS Officer App</servlet-name>
-        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>RMS Officer App</servlet-name>
-        <url-pattern>/apps/officer/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
