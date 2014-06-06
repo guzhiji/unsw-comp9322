@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-    <display-name>SOA Assignment 2</display-name>
+    <display-name>SOA Assignment 2 - Apps</display-name>
     <listener>
         <listener-class>au.edu.unsw.cse.cs9322.assignment2.rms.db.DBBackupServletHook</listener-class>
     </listener>
@@ -17,6 +17,20 @@
     <servlet-mapping>
         <servlet-name>RMS Driver App</servlet-name>
         <url-pattern>/apps/driver/*</url-pattern>
+    </servlet-mapping>
+    <!--                         RMS Officer App                            -->
+    <servlet>
+        <servlet-name>RMS Officer App</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RMS Officer App</servlet-name>
+        <url-pattern>/apps/officer/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
