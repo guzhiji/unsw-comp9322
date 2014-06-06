@@ -40,7 +40,7 @@ public class ASDGreenSlipProvider implements GreenSlipProvider {
             GreenSlipMessage gsm = new GreenSlipMessage();
             gsm.setFirstName(fname);
             gsm.setLastName(lname);
-            gsm.setPaidFlag(gsm.getPaidFlag());
+            gsm.setPaidFlag(msg.getPaidFlag());
             gsm.setRegoNumber(rego);
 
             return gsm;
