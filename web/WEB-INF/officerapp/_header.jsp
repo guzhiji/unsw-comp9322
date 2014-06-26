@@ -7,9 +7,9 @@
         <meta charset="utf-8">
         <title>RMS - Officer's App</title> 
         <meta name="viewport" content="width=device-width, initial-scale=1"> 
-        <link rel="stylesheet" href="/RMS/jquery.mobile-1.2.0.min.css" />
-        <script src="/RMS/scripts/jquery.min.js"></script>
-        <script src="/RMS/scripts/jquery.mobile-1.2.0.min.js"></script>
+        <link rel="stylesheet" href="/RMS-App-Officer/jquery.mobile-1.2.0.min.css" />
+        <script src="/RMS-App-Officer/scripts/jquery.min.js"></script>
+        <script src="/RMS-App-Officer/scripts/jquery.mobile-1.2.0.min.js"></script>
     </head> 
 
     <body>

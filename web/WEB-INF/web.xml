@@ -4,20 +4,6 @@
     <listener>
         <listener-class>au.edu.unsw.cse.cs9322.assignment2.rms.db.DBBackupServletHook</listener-class>
     </listener>
-    <!--                         RMS Driver App                            -->
-    <servlet>
-        <servlet-name>RMS Driver App</servlet-name>
-        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms.apps.driverapp</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>RMS Driver App</servlet-name>
-        <url-pattern>/apps/driver/*</url-pattern>
-    </servlet-mapping>
     <!--                         RMS Officer App                            -->
     <servlet>
         <servlet-name>RMS Officer App</servlet-name>
@@ -37,4 +23,7 @@
             30
         </session-timeout>
     </session-config>
+    <welcome-file-list>
+        <welcome-file>/index.jsp</welcome-file>
+    </welcome-file-list>
 </web-app>
