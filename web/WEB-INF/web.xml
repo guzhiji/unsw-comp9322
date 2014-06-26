@@ -18,23 +18,12 @@
         <servlet-name>RMS Driver App</servlet-name>
         <url-pattern>/apps/driver/*</url-pattern>
     </servlet-mapping>
-    <!--                         RMS Officer App                            -->
-    <servlet>
-        <servlet-name>RMS Officer App</servlet-name>
-        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>au.edu.unsw.cse.cs9322.assignment2.rms.apps.officerapp</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>RMS Officer App</servlet-name>
-        <url-pattern>/apps/officer/*</url-pattern>
-    </servlet-mapping>
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
+    <welcome-file-list>
+        <welcome-file>/index.jsp</welcome-file>
+    </welcome-file-list>
 </web-app>
